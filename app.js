@@ -45,3 +45,36 @@ async function askAivora(message) {
   if (error) throw error;
   return data.reply;
 }
+const chatButton = document.createElement("button");
+chatButton.textContent = "💬 Aivora AI";
+chatButton.style.cssText = "position:fixed;bottom:20px;right:20px;z-index:9998;padding:14px 20px;border:0;border-radius:30px;background:#7547ed;color:white;font-weight:bold;cursor:pointer";
+document.body.appendChild(chatButton);
+
+const chatDialog = document.querySelector("#aivoraChat");
+chatButton.addEventListener("click", () => chatDialog?.showModal());
+document.querySelector("#closeChat")?.addEventListener("click", () => chatDialog?.close());
+
+document.querySelector("#chatForm")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const input = document.querySelector("#chatInput");
+  const messages = document.querySelector("#chatMessages");
+  const message = input.value.trim();
+  if (!message || !db || !user) return;
+  input.value = "";
+  const addMessage = (who, value) => {
+    const p = document.createElement("p");
+    p.textContent = who + ": " + value;
+    messages.appendChild(p);
+    messages.scrollTop = messages.scrollHeight;
+  };
+  addMessage("Sen", message);
+  try {
+    const { data, error } = await db.functions.invoke("aivora-ai-", {
+      body: { message }
+    });
+    if (error) throw error;
+    addMessage("Aivora", data?.reply || "Yanıt alınamadı.");
+  } catch (error) {
+    addMessage("Sistem", "Bağlantı hatası: " + error.message);
+  }
+});
