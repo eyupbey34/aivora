@@ -1,98 +1,25 @@
 <!doctype html>
 <html lang="tr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0b1020">
-  <meta name="description" content="Aivora — yapay zekâ destekli telefon ve müşteri iletişim platformu.">
-  <title>Aivora — AI Business Platform</title>
-  <link rel="stylesheet" href="styles.css">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>/head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#0b1020"><meta name="description" content="Aivora — yapay zekâ destekli telefon ve müşteri iletişim platformu."><title>Aivora — AI Business Platform</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+.auth-overlay{position:fixed;inset:0;z-index:9999;background:#090e1c;display:flex;align-items:center;justify-content:center;padding:20px}.auth-overlay[hidden]{display:none}.auth-card{width:min(100%,420px);background:#141b30;border:1px solid #333c61;border-radius:18px;padding:26px;color:#f5f5ff}.auth-card h1{margin:0 0 8px}.auth-card p{color:#aab3ca}.auth-card label{display:block;margin:14px 0 6px}.auth-card input{width:100%;box-sizing:border-box;padding:13px;border-radius:9px;border:1px solid #465071;background:#0b1020;color:white;font-size:16px}.auth-card button{margin-top:16px;width:100%;padding:13px;border:0;border-radius:9px;background:#7850ed;color:white;font-weight:bold;font-size:16px}.auth-card button:disabled{opacity:.6}.auth-card .auth-secondary{background:transparent;border:1px solid #465071;margin-top:9px}.auth-message{min-height:24px;color:#ffb6b6!important;overflow-wrap:anywhere}.auth-card .auth-note{font-size:12px}.account-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0 18px;color:#b9c4de}.account-bar button{border:1px solid #465071;background:#1b2440;color:white;border-radius:8px;padding:8px 12px}
+</style>
+</head>
 <body>
-  <div class="app-shell">
-    <aside class="sidebar" id="sidebar">
-      <a class="brand" href="#" data-page="overview"><span class="brand-mark">✳</span><span>AIVORA</span></a>
-      <div class="workspace-label">ÇALIŞMA ALANI</div>
-      <nav class="nav">
-        <button class="nav-link active" data-page="overview"><span>▦</span> Genel Bakış</button>
-        <button class="nav-link" data-page="agents"><span>✧</span> AI Asistanlar</button>
-        <button class="nav-link" data-page="calls"><span>◉</span> Görüşmeler</button>
-        <button class="nav-link" data-page="contacts"><span>♙</span> Müşteriler</button>
-        <button class="nav-link" data-page="wallet"><span>◇</span> Bakiye & Kullanım</button>
-        <button class="nav-link" data-page="settings"><span>⚙</span> Ayarlar</button>
-      </nav>
-      <div class="sidebar-bottom">
-        <div class="help-card"><div class="help-icon">?</div><strong>Yardıma mı ihtiyacın var?</strong><p>Aivora kurulum adımlarını birlikte tamamlayalım.</p><a href="mailto: destek@aivora.example">Destek ekibi →</a></div>
-        <div class="user-mini"><div class="avatar">A</div><div><strong>Aivora Demo</strong><small>Demo çalışma alanı</small></div><span class="dots">•••</span></div>
-      </div>
-    </aside>
-
-    <main class="main">
-      <header class="topbar">
-        <button class="mobile-menu" id="menuToggle" aria-label="Menüyü aç">☰</button>
-        <div class="breadcrumb">Çalışma alanı <span>/</span> <strong id="crumb">Genel Bakış</strong></div>
-        <div class="top-actions"><span class="status-dot"></span><span class="top-status">Demo ortamı</span><button class="icon-btn" title="Bildirimler">♧</button><div class="avatar small">A</div></div>
-      </header>
-
-      <section class="page active" id="page-overview">
-        <div class="welcome-row"><div><p class="eyebrow">AIVORA ÇALIŞMA ALANI</p><h1>İşletmeni yapay zekâyla büyüt.</h1><p class="muted">Müşteri iletişimini tek merkezden yönetmeye başla.</p></div><button class="btn primary" data-go="agents">＋ Asistan oluştur</button></div>
-        <div class="notice"><span class="notice-icon">✦</span><div><strong>Aivora'ya hoş geldin!</strong><p>Bu sürüm arayüz prototipidir. Telefon aramaları, WhatsApp ve ödemeler henüz canlı servislere bağlı değil.</p></div><button class="notice-close" aria-label="Kapat">×</button></div>
-        <div class="stats-grid">
-          <article class="stat-card"><div class="stat-head"><span>AI asistanları</span><span class="stat-icon purple">✧</span></div><strong id="statAgents">0</strong><small>Oluşturduğun asistanlar</small></article>
-          <article class="stat-card"><div class="stat-head"><span>Toplam görüşme</span><span class="stat-icon blue">◉</span></div><strong>0</strong><small>Henüz görüşme yok</small></article>
-          <article class="stat-card"><div class="stat-head"><span>Toplam kullanım</span><span class="stat-icon teal">◷</span></div><strong>0 dk</strong><small>Bu ay</small></article>
-          <article class="stat-card"><div class="stat-head"><span>Demo bakiye</span><span class="stat-icon amber">◇</span></div><strong id="statBalance">0,00 ₺</strong><small>Gerçek para değildir</small></article>
-        </div>
-        <div class="content-grid">
-          <article class="panel"><div class="panel-title"><div><h2>Hızlı başlangıç</h2><p class="muted">Aivora'yı kurmak için ilk adımlar</p></div><span class="pill">3 adım</span></div>
-            <div class="steps"><div class="step"><span class="step-num">1</span><div><strong>İlk AI asistanını oluştur</strong><p>Asistanına bir isim ve görev ver.</p></div><button class="text-btn" data-go="agents">Başla →</button></div>
-            <div class="step"><span class="step-num">2</span><div><strong>İletişim kanalını bağla</strong><p>Telefon veya WhatsApp entegrasyonunu kur.</p></div><span class="pill muted-pill">Yakında</span></div>
-            <div class="step"><span class="step-num">3</span><div><strong>İlk görüşmeni yönet</strong><p>Görüşme kayıtlarını ve özetleri takip et.</p></div><span class="pill muted-pill">Yakında</span></div></div>
-          </article>
-          <article class="panel"><div class="panel-title"><div><h2>Son aktiviteler</h2><p class="muted">Çalışma alanındaki hareketler</p></div></div><div class="empty-state"><div class="empty-orb">✧</div><strong>Henüz aktivite yok</strong><p>Asistan oluşturduğunda aktivitelerin burada görünecek.</p></div></article>
-        </div>
-      </section>
-
-      <section class="page" id="page-agents">
-        <div class="page-heading"><div><p class="eyebrow">YAPAY ZEKÂ</p><h1>AI Asistanlar</h1><p class="muted">İşletmen için uzman AI asistanları oluştur.</p></div><button class="btn primary" id="newAgentBtn">＋ Yeni asistan</button></div>
-        <div class="panel"><div class="panel-title"><div><h2>Asistanların</h2><p class="muted">Bu cihazda saklanan demo asistanlar</p></div><span class="pill" id="agentCount">0 asistan</span></div><div id="agentList" class="agent-list"><div class="empty-state"><div class="empty-orb">✧</div><strong>Henüz asistan oluşturmadın</strong><p>İlk asistanını oluşturarak başlayabilirsin.</p><button class="btn secondary" id="emptyCreateBtn">Asistan oluştur</button></div></div></div>
-      </section>
-
-      <section class="page" id="page-calls">
-        <div class="page-heading"><div><p class="eyebrow">İLETİŞİM</p><h1>Görüşmeler</h1><p class="muted">Telefon görüşmelerini ve konuşma özetlerini takip et.</p></div></div>
-        <div class="panel"><div class="empty-state"><div class="empty-orb">◉</div><strong>Henüz görüşme bulunmuyor</strong><p>Telefon sağlayıcısı bağlandığında gerçek görüşmeler burada listelenecek.</p><span class="pill muted-pill">Telefon entegrasyonu gerekli</span></div></div>
-      </section>
-
-      <section class="page" id="page-contacts">
-        <div class="page-heading"><div><p class="eyebrow">CRM</p><h1>Müşteriler</h1><p class="muted">Müşteri kayıtlarını ve iletişim geçmişini tek yerde tut.</p></div><button class="btn secondary" disabled>＋ Müşteri ekle · Yakında</button></div>
-        <div class="panel"><div class="empty-state"><div class="empty-orb">♙</div><strong>Müşteri listen hazır olduğunda burada</strong><p>CRM modülü sonraki geliştirme adımında etkinleştirilecek.</p></div></div>
-      </section>
-
-      <section class="page" id="page-wallet">
-        <div class="page-heading"><div><p class="eyebrow">FATURALANDIRMA</p><h1>Bakiye & Kullanım</h1><p class="muted">Kullanımını ve harcamalarını takip et.</p></div></div>
-        <div class="wallet-card"><div><span>DEMO BAKİYE</span><strong id="walletBalance">0,00 ₺</strong><small>Bu tutar gerçek para veya ödeme değildir.</small></div><div class="wallet-symbol">◇</div></div>
-        <div class="panel"><div class="panel-title"><div><h2>Demo bakiye işlemi</h2><p class="muted">Arayüzü test etmek için sanal bakiye ekleyebilirsin.</p></div></div><button class="btn secondary" id="addDemoBalance">＋ 100 ₺ demo bakiye ekle</button><p class="fine-print">Gerçek ödeme almak için ödeme kuruluşu hesabı, sunucu tarafı doğrulama ve yasal işletme gereklilikleri tamamlanmalıdır.</p></div>
-      </section>
-
-      <section class="page" id="page-settings">
-        <div class="page-heading"><div><p class="eyebrow">ÇALIŞMA ALANI</p><h1>Ayarlar</h1><p class="muted">Platform tercihlerini görüntüle.</p></div></div>
-        <div class="panel settings-list"><div class="setting-row"><div><strong>Çalışma alanı adı</strong><p class="muted">Aivora Demo</p></div><span class="pill">Demo</span></div><div class="setting-row"><div><strong>Arayüz dili</strong><p class="muted">Türkçe</p></div><span>TR</span></div><div class="setting-row"><div><strong>Tema</strong><p class="muted">Koyu · Premium</p></div><span>●</span></div><div class="setting-row"><div><strong>API bağlantıları</strong><p class="muted">Henüz yapılandırılmadı</p></div><span class="pill warning">Bağlı değil</span></div></div>
-      </section>
-      <footer>© 2026 Aivora · AI Business Platform <span>Önizleme sürümü 0.1</span></footer>
-    </main>
-  </div>
-
-  <dialog id="agentDialog" class="modal">
-    <form id="agentForm" method="dialog">
-      <div class="modal-head"><div><p class="eyebrow">YENİ AI ASİSTAN</p><h2>Asistanını oluştur</h2></div><button type="button" class="icon-btn" id="closeDialog">×</button></div>
-      <label for="agentName">Asistan adı</label><input id="agentName" maxlength="40" placeholder="Örn. Aivora Satış Asistanı" required>
-      <label for="agentType">Asistan türü</label><select id="agentType"><option>Telefon asistanı</option><option>WhatsApp asistanı</option><option>Müşteri destek asistanı</option></select>
-      <label for="agentGoal">Görevi</label><textarea id="agentGoal" rows="3" maxlength="240" placeholder="Örn. Müşterilerin randevu taleplerini karşıla."></textarea>
-      <div class="modal-note">Bu işlem yalnızca demo asistan kaydı oluşturur. Henüz arama veya mesaj göndermez.</div>
-      <div class="modal-actions"><button type="button" class="btn secondary" id="cancelDialog">Vazgeç</button><button class="btn primary" type="submit">Asistanı oluştur</button></div>
-    </form>
-  </dialog>
-  <div class="toast" id="toast" role="status"></div>
-  <script src="app.js"></script>
-</body>
-</html>
+<div id="authOverlay" class="auth-overlay"><div class="auth-card"><h1>✳ AIVORA</h1><p>Çalışma alanına giriş yap</p><form id="authForm"><label for="authEmail">E-posta</label><input id="authEmail" type="email" autocomplete="email" required placeholder="ornek@mail.com"><label for="authPassword">Şifre (en az 6 karakter)</label><input id="authPassword" type="password" minlength="6" autocomplete="current-password" required><button id="loginBtn" type="submit">Giriş yap</button></form><button class="auth-secondary" id="signupBtn" type="button">Yeni hesap oluştur</button><p id="authMessage" class="auth-message" role="status"></p><p class="auth-note">Üyelik sonrası e-posta doğrulaması istenebilir.</p></div></div>
+<div class="app-shell">
+<aside class="sidebar" id="sidebar"><a class="brand" href="#" data-page="overview"><span class="brand-mark">✳</span><span>AIVORA</span></a><div class="workspace-label">ÇALIŞMA ALANI</div><nav class="nav"><button class="nav-link active" data-page="overview"><span>▦</span> Genel Bakış</button><button class="nav-link" data-page="agents"><span>✧</span> AI Asistanlar</button><button class="nav-link" data-page="calls"><span>◉</span> Görüşmeler</button><button class="nav-link" data-page="contacts"><span>♙</span> Müşteriler</button><button class="nav-link" data-page="wallet"><span>◇</span> Bakiye & Kullanım</button><button class="nav-link" data-page="settings"><span>⚙</span> Ayarlar</button></nav><div class="sidebar-bottom"><div class="help-card"><div class="help-icon">?</div><strong>Yardıma mı ihtiyacın var?</strong><p>Aivora kurulum adımlarını birlikte tamamlayalım.</p></div><div class="user-mini"><div class="avatar">A</div><div><strong>Aivora</strong><small>Çalışma alanı</small></div><span class="dots">•••</span></div></div></aside>
+<main class="main"><header class="topbar"><button class="mobile-menu" id="menuToggle" aria-label="Menüyü aç">☰</button><div class="breadcrumb">Çalışma alanı <span>/</span> <strong id="crumb">Genel Bakış</strong></div><div class="top-actions"><span class="status-dot"></span><span class="top-status">Aivora</span><button class="icon-btn" title="Bildirimler">♧</button><div class="avatar small">A</div></div></header>
+<div class="account-bar"><span id="accountEmail">Bağlanıyor...</span><button id="logoutBtn" type="button">Çıkış yap</button></div>
+<section class="page active" id="page-overview"><div class="welcome-row"><div><p class="eyebrow">AIVORA ÇALIŞMA ALANI</p><h1>İşletmeni yapay zekâyla büyüt.</h1><p class="muted">Müşteri iletişimini tek merkezden yönetmeye başla.</p></div><button class="btn primary" data-go="agents">＋ Asistan oluştur</button></div><div class="notice"><span class="notice-icon">✦</span><div><strong>Aivora'ya hoş geldin!</strong><p>Asistan kayıtları Supabase'e bağlanır. Telefon aramaları, WhatsApp, yapay zekâ yanıtları ve ödemeler henüz canlı servislere bağlı değildir.</p></div><button class="notice-close" aria-label="Kapat">×</button></div><div class="stats-grid"><article class="stat-card"><div class="stat-head"><span>AI asistanları</span><span class="stat-icon purple">✧</span></div><strong id="statAgents">0</strong><small>Oluşturduğun asistanlar</small></article><article class="stat-card"><div class="stat-head"><span>Toplam görüşme</span><span class="stat-icon blue">◉</span></div><strong>0</strong><small>Henüz görüşme yok</small></article><article class="stat-card"><div class="stat-head"><span>Toplam kullanım</span><span class="stat-icon teal">◷</span></div><strong>0 dk</strong><small>Bu ay</small></article><article class="stat-card"><div class="stat-head"><span>Demo bakiye</span><span class="stat-icon amber">◇</span></div><strong id="statBalance">0,00 ₺</strong><small>Gerçek para değildir</small></article></div><div class="content-grid"><article class="panel"><div class="panel-title"><div><h2>Hızlı başlangıç</h2><p class="muted">Aivora'yı kurmak için ilk adımlar</p></div><span class="pill">3 adım</span></div><div class="steps"><div class="step"><span class="step-num">1</span><div><strong>İlk AI asistanını oluştur</strong><p>Asistanına bir isim ve görev ver.</p></div><button class="text-btn" data-go="agents">Başla →</button></div><div class="step"><span class="step-num">2</span><div><strong>İletişim kanalını bağla</strong><p>Telefon veya WhatsApp entegrasyonunu kur.</p></div><span class="pill muted-pill">Yakında</span></div><div class="step"><span class="step-num">3</span><div><strong>İlk görüşmeni yönet</strong><p>Görüşme kayıtlarını ve özetleri takip et.</p></div><span class="pill muted-pill">Yakında</span></div></div></article><article class="panel"><div class="panel-title"><div><h2>Son aktiviteler</h2><p class="muted">Çalışma alanındaki hareketler</p></div></div><div class="empty-state"><div class="empty-orb">✧</div><strong>Henüz aktivite yok</strong><p>Görüşme aktiviteleri burada görünecek.</p></div></article></div></section>
+<section class="page" id="page-agents"><div class="page-heading"><div><p class="eyebrow">YAPAY ZEKÂ</p><h1>AI Asistanlar</h1><p class="muted">İşletmen için uzman AI asistanları oluştur.</p></div><button class="btn primary" id="newAgentBtn">＋ Yeni asistan</button></div><div class="panel"><div class="panel-title"><div><h2>Asistanların</h2><p class="muted">Supabase hesabında saklanan asistanlar</p></div><span class="pill" id="agentCount">0 asistan</span></div><div id="agentList" class="agent-list"><div class="empty-state">Yükleniyor...</div></div></div></section>
+<section class="page" id="page-calls"><div class="page-heading"><div><p class="eyebrow">İLETİŞİM</p><h1>Görüşmeler</h1><p class="muted">Telefon görüşmelerini ve konuşma özetlerini takip et.</p></div></div><div class="panel"><div class="empty-state"><div class="empty-orb">◉</div><strong>Henüz görüşme bulunmuyor</strong><p>Telefon sağlayıcısı bağlandığında gerçek görüşmeler burada listelenecek.</p><span class="pill muted-pill">Telefon entegrasyonu gerekli</span></div></div></section>
+<section class="page" id="page-contacts"><div class="page-heading"><div><p class="eyebrow">CRM</p><h1>Müşteriler</h1><p class="muted">Müşteri kayıtlarını ve iletişim geçmişini tek yerde tut.</p></div><button class="btn secondary" disabled>＋ Müşteri ekle · Yakında</button></div><div class="panel"><div class="empty-state"><div class="empty-orb">♙</div><strong>Müşteri listen hazır olduğunda burada</strong><p>CRM modülü sonraki geliştirme adımında etkinleştirilecek.</p></div></div></section>
+<section class="page" id="page-wallet"><div class="page-heading"><div><p class="eyebrow">FATURALANDIRMA</p><h1>Bakiye & Kullanım</h1><p class="muted">Kullanımını ve harcamalarını takip et.</p></div></div><div class="wallet-card"><div><span>DEMO BAKİYE</span><strong id="walletBalance">0,00 ₺</strong><small>Bu tutar gerçek para veya ödeme değildir.</small></div><div class="wallet-symbol">◇</div></div><div class="panel"><div class="panel-title"><div><h2>Demo bakiye işlemi</h2><p class="muted">Arayüzü test etmek için sanal bakiye ekleyebilirsin.</p></div></div><button class="btn secondary" id="addDemoBalance">＋ 100 ₺ demo bakiye ekle</button><p class="fine-print">Gerçek ödeme almak için ödeme kuruluşu hesabı, sunucu tarafı doğrulama ve yasal işletme gereklilikleri tamamlanmalıdır.</p></div></section>
+<section class="page" id="page-settings"><div class="page-heading"><div><p class="eyebrow">ÇALIŞMA ALANI</p><h1>Ayarlar</h1><p class="muted">Platform tercihlerini görüntüle.</p></div></div><div class="panel settings-list"><div class="setting-row"><div><strong>Çalışma alanı adı</strong><p class="muted">Aivora</p></div><span class="pill">MVP</span></div><div class="setting-row"><div><strong>Arayüz dili</strong><p class="muted">Türkçe</p></div><span>TR</span></div><div class="setting-row"><div><strong>Tema</strong><p class="muted">Koyu · Premium</p></div><span>●</span></div><div class="setting-row"><div><strong>Veritabanı</strong><p class="muted">Supabase Auth ve asistan kayıtları</p></div><span class="pill">Bağlantı yapılandırıldı</span></div></div></section>
+<footer>© 2026 Aivora · AI Business Platform <span>Önizleme sürümü 0.2</span></footer></main></div>
+<dialog id="agentDialog" class="modal"><form id="agentForm"><div class="modal-head"><div><p class="eyebrow">YENİ AI ASİSTAN</p><h2>Asistanını oluştur</h2></div><button type="button" class="icon-btn" id="closeDialog">×</button></div><label for="agentName">Asistan adı</label><input id="agentName" maxlength="40" placeholder="Örn. Aivora Satış Asistanı" required><label for="agentType">Asistan türü</label><select id="agentType"><option>Telefon asistanı</option><option>WhatsApp asistanı</option><option>Müşteri destek asistanı</option></select><label for="agentGoal">Görevi</label><textarea id="agentGoal" rows="3" maxlength="240" placeholder="Örn. Müşterilerin randevu taleplerini karşıla."></textarea><div class="modal-note">Asistan Supabase'e kaydedilir. Henüz arama veya mesaj göndermez.</div><div class="modal-actions"><button type="button" class="btn secondary" id="cancelDialog">Vazgeç</button><button class="btn primary" type="submit" id="saveAgentBtn">Asistanı oluştur</button></div></form></dialog><div class="toast" id="toast" role="status"></div><script src="app.js"></script>
+</body></html>
