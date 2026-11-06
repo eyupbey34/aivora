@@ -31,3 +31,17 @@ $('#logoutBtn').addEventListener('click',async()=>{if(!db)return;const {error}=a
 async function applySession(session){const nextUser=session?.user||null;if(nextUser?.id===user?.id)return;user=nextUser;agents=[];renderAgents();$('#authOverlay').hidden=!!user;$('#accountEmail').textContent=user?.email||'Giriş yapılmadı';demoBalance=user?Number(localStorage.getItem('aivora_demo_balance_'+user.id)||0):0;renderBalance();if(user)await loadAgents()}
 async function init(){if(!db){authMessage('Supabase yüklenemedi. İnternet bağlantını kontrol et.');return}const {data,error}=await db.auth.getSession();if(error)authMessage(error.message);await applySession(data?.session);db.auth.onAuthStateChange((_event,session)=>{setTimeout(()=>applySession(session),0)})}
 renderAgents();renderBalance();init();
+const AIVORA_AI_URL =
+  `${SUPABASE_URL}/functions/v1/aivora-ai-`;
+
+async function askAivora(message) {
+  if (!db) throw new Error("Supabase bağlantısı yok");
+
+  const { data, error } = await db.functions.invoke(
+    "aivora-ai-",
+    { body: { message } }
+  );
+
+  if (error) throw error;
+  return data.reply;
+}
