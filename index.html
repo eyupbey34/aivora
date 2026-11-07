@@ -21,32 +21,5 @@
 <section class="page" id="page-wallet"><div class="page-heading"><div><p class="eyebrow">FATURALANDIRMA</p><h1>Bakiye & Kullanım</h1><p class="muted">Kullanımını ve harcamalarını takip et.</p></div></div><div class="wallet-card"><div><span>DEMO BAKİYE</span><strong id="walletBalance">0,00 ₺</strong><small>Bu tutar gerçek para veya ödeme değildir.</small></div><div class="wallet-symbol">◇</div></div><div class="panel"><div class="panel-title"><div><h2>Demo bakiye işlemi</h2><p class="muted">Arayüzü test etmek için sanal bakiye ekleyebilirsin.</p></div></div><button class="btn secondary" id="addDemoBalance">＋ 100 ₺ demo bakiye ekle</button><p class="fine-print">Gerçek ödeme almak için ödeme kuruluşu hesabı, sunucu tarafı doğrulama ve yasal işletme gereklilikleri tamamlanmalıdır.</p></div></section>
 <section class="page" id="page-settings"><div class="page-heading"><div><p class="eyebrow">ÇALIŞMA ALANI</p><h1>Ayarlar</h1><p class="muted">Platform tercihlerini görüntüle.</p></div></div><div class="panel settings-list"><div class="setting-row"><div><strong>Çalışma alanı adı</strong><p class="muted">Aivora</p></div><span class="pill">MVP</span></div><div class="setting-row"><div><strong>Arayüz dili</strong><p class="muted">Türkçe</p></div><span>TR</span></div><div class="setting-row"><div><strong>Tema</strong><p class="muted">Koyu · Premium</p></div><span>●</span></div><div class="setting-row"><div><strong>Veritabanı</strong><p class="muted">Supabase Auth ve asistan kayıtları</p></div><span class="pill">Bağlantı yapılandırıldı</span></div></div></section>
 <footer>© 2026 Aivora · AI Business Platform <span>Önizleme sürümü 0.2</span></footer></main></div>
-<dialog id="agentDialog" class="modal">
-  <form id="agentForm">/form>
- </dialog>
-<dialog id="aivoraChat" class="modal"> 
-  <div style="padding:20px;background:#111827;color:white;min-width:260px;border-radius:16px">
-    <h2>✨ Aivora AI</h2>
-    <p>Yapay zekâ asistanınla sohbet et.</p>
-
-    <div id="chatMessages"
-         style="height:250px;overflow-y:auto;padding:10px">
-    </div>
-
-    <form id="chatForm">
-      <input id="chatInput"
-             type="text"
-             placeholder="Mesajını yaz..."
-             required
-             style="padding:12px;width:90%">
-      <button type="submit">Gönder ➤</button>
-    </form>
-
-    <button type="button" id="closeChat">
-      Sohbeti kapat
-    </button>
-  </div>
-</dialog>
-<script src="app.js"></script>
-</body> 
-</html>
+<dialog id="agentDialog" class="modal"><form id="agentForm"><div class="modal-head"><div><p class="eyebrow">YENİ AI ASİSTAN</p><h2>Asistanını oluştur</h2></div><button type="button" class="icon-btn" id="closeDialog">×</button></div><label for="agentName">Asistan adı</label><input id="agentName" maxlength="40" placeholder="Örn. Aivora Satış Asistanı" required><label for="agentType">Asistan türü</label><select id="agentType"><option>Telefon asistanı</option><option>WhatsApp asistanı</option><option>Müşteri destek asistanı</option></select><label for="agentGoal">Görevi</label><textarea id="agentGoal" rows="3" maxlength="240" placeholder="Örn. Müşterilerin randevu taleplerini karşıla."></textarea><div class="modal-note">Asistan Supabase'e kaydedilir. Henüz arama veya mesaj göndermez.</div><div class="modal-actions"><button type="button" class="btn secondary" id="cancelDialog">Vazgeç</button><button class="btn primary" type="submit" id="saveAgentBtn">Asistanı oluştur</button></div></form></dialog><div class="toast" id="toast" role="status"></div><script src="app.js"></script>
+</body></html>
