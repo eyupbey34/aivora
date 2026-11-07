@@ -1,0 +1,42 @@
+const SUPABASE_URL = "https://pdvovstitmkjkmgqfjwi.supabase.co";
+const SUPABASE_KEY = "sb_publishable_jkogisJn4fhHZAm2rYAcRA_p8VJuPuC";
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const pages = {overview:"Genel Bakış",agents:"AI Asistanlar",calls:"Görüşmeler",contacts:"Müşteriler",wallet:"Bakiye & Kullanım",settings:"Ayarlar"};
+const db = window.supabase?.createClient(SUPABASE_URL,SUPABASE_KEY);
+let user = null, agents = [], demoBalance = 0;
+const money = n => n.toLocaleString("tr-TR",{minimumFractionDigits:2,maximumFractionDigits:2})+" ₺";
+function showToast(message){const t=$("#toast");t.textContent=message;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),3000)}
+function navigate(page){$$('.page').forEach(p=>p.classList.toggle('active',p.id===`page-${page}`));$$('.nav-link').forEach(b=>b.classList.toggle('active',b.dataset.page===page));$('#crumb').textContent=pages[page]||'Genel Bakış';$('#sidebar').classList.remove('open');window.scrollTo({top:0,behavior:'smooth'})}
+$$('.nav-link').forEach(b=>b.addEventListener('click',()=>navigate(b.dataset.page)));
+$$('[data-go]').forEach(b=>b.addEventListener('click',()=>navigate(b.dataset.go)));
+$('#menuToggle').addEventListener('click',()=>$('#sidebar').classList.toggle('open'));
+$('.notice-close').addEventListener('click',()=>$('.notice').remove());
+const dialog=$('#agentDialog');
+function openDialog(){if(!user){showToast('Önce giriş yap.');return}dialog.showModal();$('#agentName').focus()}
+$('#newAgentBtn').addEventListener('click',openDialog);
+$('#closeDialog').addEventListener('click',()=>dialog.close());
+$('#cancelDialog').addEventListener('click',()=>dialog.close());
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function renderAgents(){const list=$('#agentList');$('#agentCount').textContent=`${agents.length} asistan`;$('#statAgents').textContent=agents.length;if(!agents.length){list.innerHTML='<div class="empty-state"><div class="empty-orb">✧</div><strong>Henüz asistan oluşturmadın</strong><p>İlk asistanını oluşturarak başlayabilirsin.</p><button class="btn secondary" id="emptyCreateBtn">Asistan oluştur</button></div>';$('#emptyCreateBtn').addEventListener('click',openDialog);return}list.innerHTML=agents.map(a=>`<button type="button" class="agent-item agent-open" data-agent-id="${escapeHtml(a.id)}" aria-label="${escapeHtml(a.name)} ile sohbet aç"><div class="agent-glyph">✧</div><div><strong>${escapeHtml(a.name)}</strong><small>${escapeHtml(a.type)}${a.instructions?' · '+escapeHtml(a.instructions):''}</small></div><span class="pill muted-pill">Sohbet aç →</span></button>`).join('');list.querySelectorAll('[data-agent-id]').forEach(b=>b.addEventListener('click',()=>openAgentChat(b.dataset.agentId)))}
+async function loadAgents(){if(!user)return;const {data,error}=await db.from('assistants').select('id,name,type,instructions,created_at').eq('user_id',user.id).order('created_at',{ascending:false});if(error){showToast('Asistanlar yüklenemedi: '+error.message);return}agents=data||[];renderAgents()}
+$('#agentForm').addEventListener('submit',async e=>{e.preventDefault();if(!user)return;const name=$('#agentName').value.trim();if(!name)return;const button=$('#saveAgentBtn');button.disabled=true;try{const {error}=await db.from('assistants').insert({user_id:user.id,name,type:$('#agentType').value,instructions:$('#agentGoal').value.trim()});if(error)throw error;await loadAgents();dialog.close();e.target.reset();showToast('Asistan Supabase’e kaydedildi.')}catch(err){showToast('Kayıt başarısız: '+err.message)}finally{button.disabled=false}});
+function renderBalance(){$('#statBalance').textContent=money(demoBalance);$('#walletBalance').textContent=money(demoBalance)}
+$('#addDemoBalance').addEventListener('click',()=>{if(!user)return;demoBalance+=100;localStorage.setItem('aivora_demo_balance_'+user.id,String(demoBalance));renderBalance();showToast('100 ₺ demo bakiye eklendi.')});
+function authMessage(message){$('#authMessage').textContent=message}
+function authBusy(value){$('#loginBtn').disabled=value;$('#signupBtn').disabled=value}
+$('#authForm').addEventListener('submit',async e=>{e.preventDefault();if(!db)return authMessage('Supabase kütüphanesi yüklenemedi.');authBusy(true);authMessage('Giriş yapılıyor...');try{const {error}=await db.auth.signInWithPassword({email:$('#authEmail').value.trim(),password:$('#authPassword').value});if(error)throw error;authMessage('')}catch(err){authMessage(err.message)}finally{authBusy(false)}});
+$('#signupBtn').addEventListener('click',async()=>{if(!$('#authForm').reportValidity())return;if(!db)return authMessage('Supabase kütüphanesi yüklenemedi.');authBusy(true);authMessage('Hesap oluşturuluyor...');try{const {data,error}=await db.auth.signUp({email:$('#authEmail').value.trim(),password:$('#authPassword').value,options:{emailRedirectTo:location.origin+location.pathname}});if(error)throw error;authMessage(data.session?'Hesabın oluşturuldu.':'E-postana gelen doğrulama bağlantısını aç, ardından giriş yap.')}catch(err){authMessage(err.message)}finally{authBusy(false)}});
+$('#logoutBtn').addEventListener('click',async()=>{if(!db)return;const {error}=await db.auth.signOut();if(error)showToast(error.message)});
+async function applySession(session){const nextUser=session?.user||null;if(nextUser?.id===user?.id)return;user=nextUser;agents=[];renderAgents();$('#authOverlay').hidden=!!user;$('#accountEmail').textContent=user?.email||'Giriş yapılmadı';demoBalance=user?Number(localStorage.getItem('aivora_demo_balance_'+user.id)||0):0;renderBalance();if(user)await loadAgents()}
+async function init(){if(!db){authMessage('Supabase yüklenemedi. İnternet bağlantını kontrol et.');return}const {data,error}=await db.auth.getSession();if(error)authMessage(error.message);await applySession(data?.session);db.auth.onAuthStateChange((_event,session)=>{setTimeout(()=>applySession(session),0)})}
+renderAgents();renderBalance();init();
+
+// Sohbet: OpenAI anahtarı yalnızca Supabase Edge Function secrets içinde tutulur.
+let selectedAgent=null;
+let chatHistory=[];
+const chatDialog=$('#aivoraChat');
+function appendChat(role,content){const el=document.createElement('p');el.style.cssText='padding:10px 12px;border-radius:12px;margin:8px 0;background:'+(role==='user'?'#47318d':'#1f2941')+';white-space:pre-wrap;overflow-wrap:anywhere';el.textContent=(role==='user'?'Sen: ':'Aivora: ')+content;$('#chatMessages').append(el);$('#chatMessages').scrollTop=$('#chatMessages').scrollHeight;return el}
+function openAgentChat(id){selectedAgent=agents.find(a=>String(a.id)===String(id));if(!selectedAgent)return;chatHistory=[];$('#chatAgentTitle').textContent='✨ '+selectedAgent.name;$('#chatMessages').replaceChildren();appendChat('assistant','Merhaba! Mesajını yazabilirsin. Canlı yanıtlar için Supabase Edge Function kurulumu gereklidir.');chatDialog.showModal();$('#chatInput').focus()}
+$('#closeChat').addEventListener('click',()=>chatDialog.close());
+$('#chatForm').addEventListener('submit',async e=>{e.preventDefault();if(!selectedAgent||!user)return;const input=$('#chatInput');const message=input.value.trim();if(!message)return;input.value='';appendChat('user',message);const pending=appendChat('assistant','Yanıt bekleniyor...');const btn=e.target.querySelector('button[type="submit"]');btn.disabled=true;try{const {data,error}=await db.functions.invoke('aivora-chat',{body:{agentId:selectedAgent.id,messages:[...chatHistory,{role:'user',content:message}]}});if(error)throw error;if(!data?.reply)throw Error(data?.error||'Sunucudan yanıt gelmedi.');pending.textContent='Aivora: '+data.reply;chatHistory.push({role:'user',content:message},{role:'assistant',content:data.reply})}catch(err){pending.textContent='Aivora: Canlı yapay zekâ henüz yapılandırılmadı veya sunucu hatası oluştu. Supabase aivora-chat Edge Function kurulumunu kontrol et.';console.error('Aivora chat:',err)}finally{btn.disabled=false}});
