@@ -1,21 +1,23 @@
-# Aivora — AI Business Platform
+# Aivora — İşletmenin yeni ritmi
 
-Aivora'nın mobil uyumlu ilk web arayüzü. Bu paket, telefondan GitHub'a yüklenip GitHub Pages ile yayınlanabilecek statik bir prototiptir.
+Live: https://aivora.tr
 
-## Dosyalar
-- `index.html` — sayfa yapısı
-- `styles.css` — koyu premium, mobil uyumlu tasarım
-- `app.js` — menüler, demo asistan oluşturma ve demo bakiye etkileşimleri
+Responsive animated marketing site and authenticated AI business workspace. GitHub Pages serves the root HTML/CSS/JS; Supabase provides Auth, Postgres with RLS, AI Edge Function and owner administration.
 
-## Telefonda GitHub'a yükleme
-1. GitHub uygulamasını veya Chrome'da https://github.com adresini aç.
-2. **New repository** ile `aivora` adında bir repository oluştur. Public seçebilirsin.
-3. Repository içinde **Add file → Upload files** seç.
-4. ZIP'i önce telefonda çıkar. İçindeki `index.html`, `styles.css`, `app.js` ve `README.md` dosyalarını yükle. Dosyalar repository'nin kök dizininde olmalı.
-5. **Commit changes** ile kaydet.
-6. Repository'de **Settings → Pages** aç.
-7. **Deploy from a branch** seç; branch `main`, folder `/(root)` olsun ve kaydet.
-8. GitHub Pages birkaç dakika içinde bir yayın adresi oluşturur.
+- Web AI assistants with business profile / knowledge context, usage quotas and stored conversations.
+- Customer records, appointment planning with overlap validation, follow-up tasks and reports.
+- Email / social / advertising / call-campaign drafts with AI assistance and review status.
+- AI customer / appointment / task proposals require user review and explicit form save.
+- Owner-only administration for accounts, assistants, plans, limits, maintenance and usage.
 
-## Önemli
-Bu sürüm bir arayüz prototipidir. Veriler aynı tarayıcıdaki `localStorage` alanında tutulur. Gerçek kullanıcı hesabı, güvenli veritabanı, AI API, telefon/SIP, WhatsApp Business ve ödeme altyapısı henüz eklenmemiştir. API anahtarlarını tarayıcı koduna koymayın. Gerçek servisler için sunucu tarafı backend ve güvenlik yapılandırması gerekir.
+External telephone, WhatsApp, mailbox, social/ad accounts, calendar sync, payments and scheduled notifications are not connected. The connection center shows their requirements. Approval of a draft does not send or publish it.
+
+See [BUSINESS.md](BUSINESS.md) for capabilities, external prerequisites, privacy and tests; [ADMIN.md](ADMIN.md) for owner administration.
+
+## Source
+
+Frontend: index.html, styles.css, app.js, admin.css, admin.js, business.css, business.js. No build step.
+
+Server: chat-edge.ts → aivora-ai-, admin-edge.ts → aivora-admin. SQL files are applied migration source, not scripts to reapply blindly. Server secrets are configured in Supabase only.
+
+`node edge-tests.mjs` runs isolated HTTP tests. SQL test files use transaction rollback to avoid permanent test records. Production runs from main / root. CNAME retains aivora.tr.
