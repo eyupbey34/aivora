@@ -3,6 +3,7 @@ const SUPABASE_KEY = "sb_publishable_jkogisJn4fhHZAm2rYAcRA_p8VJuPuC";
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const pages = {overview:"Genel Bakış",agents:"AI Asistanlar",calls:"Görüşmeler",contacts:"Müşteriler",wallet:"Bakiye & Kullanım",settings:"Ayarlar"};
+const isRecoveryLink = new URLSearchParams(location.hash.slice(1)).get("type") === "recovery";
 const db = window.supabase?.createClient(SUPABASE_URL,SUPABASE_KEY);
 let user = null, agents = [], demoBalance = 0;
 const money = n => n.toLocaleString("tr-TR",{minimumFractionDigits:2,maximumFractionDigits:2})+" ₺";
@@ -41,3 +42,58 @@ function openAgentChat(id){selectedAgent=agents.find(a=>String(a.id)===String(id
 $('#closeChat').addEventListener('click',()=>chatDialog.close());
 $('#chatForm').addEventListener('submit',async e=>{e.preventDefault();if(!selectedAgent||!user)return;const input=$('#chatInput');const message=input.value.trim();if(!message)return;input.value='';appendChat('user',message);const pending=appendChat('assistant','Yanıt bekleniyor...');input.disabled=true;const btn=e.target.querySelector('button[type="submit"]');btn.disabled=true;try{const {data,error}=await db.functions.invoke('aivora-ai-',{body:{agentId:selectedAgent.id,messages:[...chatHistory.slice(-20),{role:'user',content:message}]}});if(error)throw error;if(!data?.reply)throw Error(data?.error||'Sunucudan yanıt gelmedi.');pending.textContent='Aivora: '+data.reply;chatHistory.push({role:'user',content:message},{role:'assistant',content:data.reply})}catch(err){let message='Yanıt alınamadı. Lütfen tekrar dene.';try{const body=await err.context?.json();if(body?.error)message=body.error}catch{}pending.textContent='Aivora: '+message;}finally{btn.disabled=false;input.disabled=false;input.focus()}});
 function authError(err){const m=err?.message||'Beklenmeyen bir hata oluştu.';if(/invalid login credentials/i.test(m))return 'E-posta veya şifre yanlış. Bilgilerini kontrol et.';if(/email not confirmed/i.test(m))return 'Giriş için e-postana gelen doğrulama bağlantısını aç.';if(/already registered/i.test(m))return 'Bu e-posta zaten kayıtlı. Giriş yapmayı dene.';if(/rate limit|too many/i.test(m))return 'Çok fazla deneme yapıldı. Biraz bekleyip tekrar dene.';if(/fetch|network/i.test(m))return 'Bağlantı kurulamadı. İnternetini kontrol edip tekrar dene.';return m;}
+
+// Hesap kurtarma: bağlantı e-postayla gider, yeni şifre yalnızca kullanıcı tarafından girilir.
+const forgotButton = document.createElement('button');
+forgotButton.type = 'button';
+forgotButton.className = 'auth-secondary';
+forgotButton.textContent = 'Şifremi unuttum';
+$('#signupBtn').after(forgotButton);
+$('#authMessage').setAttribute('role', 'status');
+forgotButton.addEventListener('click', async () => {
+  const email = $('#authEmail');
+  if (!email.reportValidity() || !db) return;
+  forgotButton.disabled = true;
+  authBusy(true);
+  try {
+    const { error } = await db.auth.resetPasswordForEmail(email.value.trim(), { redirectTo: location.origin + location.pathname });
+    if (error) throw error;
+    authMessage('Hesabın kayıtlıysa şifre yenileme bağlantısı e-postana gönderildi. Spam klasörünü de kontrol et.');
+  } catch (error) { authMessage(authError(error)); }
+  finally { forgotButton.disabled = false; authBusy(false); }
+});
+const passwordDialog = document.createElement('dialog');
+passwordDialog.className = 'modal';
+passwordDialog.setAttribute('aria-labelledby', 'passwordTitle');
+passwordDialog.innerHTML = '<h2 id="passwordTitle">Şifreni yenile</h2><p>Yeni şifreni aşağıya yaz.</p><form id="passwordForm"><label for="newPassword">Yeni şifre (en az 6 karakter)</label><input id="newPassword" type="password" autocomplete="new-password" minlength="6" required><label for="confirmPassword">Yeni şifre tekrar</label><input id="confirmPassword" type="password" autocomplete="new-password" minlength="6" required><p id="passwordMessage" role="status"></p><div class="modal-actions"><button type="button" class="btn secondary" id="cancelPassword">Vazgeç</button><button type="submit" class="btn primary" id="savePassword">Şifreyi kaydet</button></div></form>';
+document.body.append(passwordDialog);
+function showPasswordDialog() {
+  if (!passwordDialog.open) { $('#passwordForm').reset(); $('#passwordMessage').textContent = ''; passwordDialog.showModal(); $('#newPassword').focus(); }
+}
+$('#cancelPassword').addEventListener('click', () => passwordDialog.close());
+$('#passwordForm').addEventListener('submit', async event => {
+  event.preventDefault();
+  if ($('#newPassword').value !== $('#confirmPassword').value) { $('#passwordMessage').textContent = 'Şifreler eşleşmiyor.'; return; }
+  $('#savePassword').disabled = true;
+  $('#cancelPassword').disabled = true;
+  try {
+    if (!db) throw Error('Bağlantı kurulamadı.');
+    const { error } = await db.auth.updateUser({ password: $('#newPassword').value });
+    if (error) throw error;
+    $('#passwordForm').reset();
+    passwordDialog.close();
+    showToast('Şifren güncellendi.');
+  } catch (error) { $('#passwordMessage').textContent = authError(error); }
+  finally { $('#savePassword').disabled = false; $('#cancelPassword').disabled = false; }
+});
+if (db) {
+  db.auth.onAuthStateChange((event) => { if (event === 'PASSWORD_RECOVERY') setTimeout(showPasswordDialog, 0); });
+  if (isRecoveryLink) db.auth.getSession().then(({ data, error }) => { if (!error && data.session) showPasswordDialog(); else authMessage('Yenileme bağlantısı geçersiz veya süresi dolmuş. Yeni bağlantı iste.'); });
+}
+const passwordSettingsButton = document.createElement('button');
+passwordSettingsButton.type = 'button';
+passwordSettingsButton.className = 'btn secondary';
+passwordSettingsButton.textContent = 'Şifremi değiştir';
+passwordSettingsButton.addEventListener('click', () => { if (user) showPasswordDialog(); });
+$('#page-settings').append(passwordSettingsButton);
+$('#chatInput').maxLength = 4000;
