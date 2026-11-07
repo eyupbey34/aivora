@@ -51,7 +51,13 @@ chatButton.style.cssText = "position:fixed;bottom:20px;right:20px;z-index:9998;p
 document.body.appendChild(chatButton);
 
 const chatDialog = document.querySelector("#aivoraChat");
-chatButton.addEventListener("click", () => chatDialog?.showModal());
+chatButton.addEventListener("click", () => {
+  if (chatDialog) {
+    chatDialog.showModal();
+  } else {
+    alert("Aivora sohbet penceresi bulunamadı!");
+  }
+});
 document.querySelector("#closeChat")?.addEventListener("click", () => chatDialog?.close());
 
 document.querySelector("#chatForm")?.addEventListener("submit", async (e) => {
