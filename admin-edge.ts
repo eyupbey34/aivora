@@ -37,7 +37,7 @@ Deno.serve(async req=>{
   if(body.action==='status'){
    const [access,plans,settings,used]=await Promise.all([api('account_access?user_id=eq.'+actor.id),api('platform_plans?order=monthly_limit.asc'),api('platform_settings?id=eq.true'),countRows('ai_usage_events?user_id=eq.'+actor.id+'&created_at=gte.'+encodeURIComponent(monthStart())+'&status=eq.success&select=id')]);
    const a=access[0]||{plan_id:'starter',blocked:false,limit_override:null};const p=plans.find(x=>x.id===a.plan_id);
-   return json({is_admin:isAdmin,plans:plans.map(({id,name,monthly_limit})=>({id,name,monthly_limit})),billing:{payments_enabled:false},usage:{plan_id:a.plan_id,plan:p?.name||'Başlangıç',limit:a.limit_override??p?.monthly_limit??1000,used,blocked:a.blocked,chat_enabled:settings[0]?.chat_enabled??true,tracking_started_at:settings[0]?.tracking_started_at}});
+   return json({is_admin:isAdmin,plans:plans.map(({id,name,monthly_limit,monthly_price_try})=>({id,name,monthly_limit,monthly_price_try})),billing:{payments_enabled:false},usage:{plan_id:a.plan_id,plan:p?.name||'Başlangıç',limit:a.limit_override??p?.monthly_limit??1000,used,blocked:a.blocked,chat_enabled:settings[0]?.chat_enabled??true,tracking_started_at:settings[0]?.tracking_started_at}});
   }
   if(!isAdmin)return json({error:'Bu işlem için yönetici yetkisi gerekiyor.'},403);
   const offset=Number.isInteger(body.offset)?Math.max(0,Math.min(body.offset,100000)):0;

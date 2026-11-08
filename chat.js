@@ -54,11 +54,11 @@
    const article=document.createElement('article');article.className='plan-card'+(current?' current':'')+(plan.id==='pro'?' featured':'');
    const tag=document.createElement('span');tag.className='plan-tag';tag.textContent=current?'MEVCUT PAKETİN':plan.id==='pro'?'DAHA FAZLA ÜRET':'AIVORA';
    const h=document.createElement('h3');h.textContent=plan.name;
-   const price=document.createElement('div');price.className='plan-price';price.textContent=entry?'Ücretsiz':'Fiyat belirleniyor';
+   const price=document.createElement('div');price.className='plan-price';price.textContent=Number.isInteger(plan.monthly_price_try)?formatNumber(plan.monthly_price_try)+' ₺ / ay':'Fiyat belirleniyor';
    const description=document.createElement('p');description.textContent=entry?'Günlük soruların ve ilk fikirlerin için.':plan.id==='pro'?'Daha sık yazmak, öğrenmek ve üretmek için.':'Yoğun kullanım ve işletme ihtiyaçları için.';
    const ul=document.createElement('ul');
    [formatNumber(plan.monthly_limit)+' başarılı AI yanıtı / ay','Sohbet geçmişi ve kaldığın yerden devam','Yazı, öğrenme ve kodlama desteği','Sohbet indirme ve yanıt kopyalama'].forEach(text=>{const li=document.createElement('li');li.textContent=text;ul.append(li);});
-   const button=document.createElement('button');button.type='button';button.className=current?'primary':'secondary';button.disabled=true;button.textContent=current?'Şu an bu pakettesin':entry?'Başlangıç paketi':'Satın alma yakında';
+   const button=document.createElement('button');button.type='button';button.className=current?'primary':'secondary';button.disabled=true;button.textContent=current?'Şu an bu pakettesin':'Satın alma yakında';
    article.append(tag,h,price,description,ul,button);cards.append(article);
   }
  }
