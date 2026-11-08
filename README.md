@@ -2,7 +2,7 @@
 
 Live: https://aivora.tr
 
-Chat-first Turkish AI assistant with account-scoped cloud conversation history. The home screen includes conversation search, resume, archive, text export, safe code-block display, response copying, dark/light themes and browser-supported voice dictation. Auth, signup and password recovery use the existing Supabase project. The previous business workspace is preserved at business.html. GitHub Pages serves the root HTML/CSS/JS; Supabase provides Auth, Postgres with RLS, AI Edge Function and owner administration.
+Chat-first Turkish AI assistant with account-scoped cloud conversation history. The home screen includes conversation search, resume, archive, text export, safe code-block display, response copying, dark/light themes and browser-supported voice dictation. The membership screen reads current plan, monthly usage and plan quotas from the authenticated server. Paid subscriptions remain unavailable until pricing and a payment provider are configured; no card collection or recurring billing is implemented. Auth, signup and password recovery use the existing Supabase project. The previous business workspace is preserved at business.html. GitHub Pages serves the root HTML/CSS/JS; Supabase provides Auth, Postgres with RLS, AI Edge Function and owner administration.
 
 - Web AI assistants with business profile / knowledge context, usage quotas and stored conversations.
 - Customer records, appointment planning with overlap validation, follow-up tasks and reports.

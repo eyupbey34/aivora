@@ -24,7 +24,7 @@ assert.equal((await adminHandler(new Request('https://test',{method:'POST'}))).s
 assert.equal((await adminHandler(request({action:'dashboard'}))).status,403);
 assert.equal((await adminHandler(request({action:'settings',changes:{chat_enabled:false}}))).status,403);
 assert.equal(mutations,0);
-const status=await (await adminHandler(request({action:'status'}))).json();assert.equal(status.is_admin,false);assert.equal(status.usage.limit,1000);
+const status=await (await adminHandler(request({action:'status'}))).json();assert.equal(status.is_admin,false);assert.equal(status.usage.limit,1000);assert.equal(status.usage.plan_id,'starter');assert.equal(status.billing.payments_enabled,false);assert.deepEqual(Object.keys(status.plans[0]).sort(),['id','monthly_limit','name']);
 admin=true;
 assert.equal((await adminHandler(request({action:'dashboard'}))).status,200);
 assert.equal((await adminHandler(request({action:'account',target:actor,changes:{plan_id:'starter',limit_override:-1,blocked:false}}))).status,400);
