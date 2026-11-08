@@ -1,5 +1,7 @@
 # Callivo reference review — 8 November 2026
 
+Gmail update (8 November 2026): server OAuth, inbox reading and explicitly reviewed sending are implemented in `gmail-edge.ts` / `gmail.js`. The user must still grant Google account consent and complete a real mailbox test. See [GMAIL.md](GMAIL.md); earlier mailbox-pending rows below describe the pre-Gmail release. Phone and WhatsApp remain unconnected.
+
 Inspected public Turkish home, Voice AI, WhatsApp AI, use cases and partner pages at https://callivo.ai/tr. Also inspected the live homepage visually in a browser. Logged-in Callivo functionality was not accessible; claims below describe its public product presentation, not independently tested operations. No Callivo source, illustration, video, customer logos or testimonials were copied. Aivora retains its violet/dark identity and current GitHub Pages host.
 
 ## Feature comparison

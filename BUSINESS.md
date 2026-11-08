@@ -1,5 +1,7 @@
 # Aivora business workspace 1.0
 
+Gmail update (8 November 2026): server OAuth, inbox reading and explicitly reviewed sending are implemented in `gmail-edge.ts` / `gmail.js`. The user must still grant Google account consent and complete a real mailbox test. See [GMAIL.md](GMAIL.md); earlier mailbox-pending rows below describe the pre-Gmail release. Phone and WhatsApp remain unconnected.
+
 Existing hosting remains GitHub Pages at https://aivora.tr. Supabase project, accounts, assistant records, owner administration and existing limits are preserved.
 
 ## Delivered

@@ -10,7 +10,7 @@ Responsive animated marketing site and authenticated AI business workspace. GitH
 - AI customer / appointment / task proposals require user review and explicit form save.
 - Owner-only administration for accounts, assistants, plans, limits, maintenance and usage.
 
-External telephone, WhatsApp, mailbox, social/ad accounts, calendar sync, payments and scheduled notifications are not connected. The connection center shows their requirements. Approval of a draft does not send or publish it.
+Gmail OAuth, inbox reading and separately reviewed sending are implemented; Google account authorization and a real mailbox test are still required. See [GMAIL.md](GMAIL.md). External telephone, WhatsApp, social/ad accounts, calendar sync, payments and scheduled notifications are not connected. The connection center shows their requirements. Approval of a draft does not send or publish it.
 
 See [BUSINESS.md](BUSINESS.md) for capabilities, external prerequisites, privacy and tests; [ADMIN.md](ADMIN.md) for owner administration.
 
