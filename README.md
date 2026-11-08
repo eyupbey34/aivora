@@ -1,8 +1,8 @@
-# Aivora — İşletmenin yeni ritmi
+# Aivora — Birlikte düşünelim
 
 Live: https://aivora.tr
 
-Responsive animated marketing site and authenticated AI business workspace. GitHub Pages serves the root HTML/CSS/JS; Supabase provides Auth, Postgres with RLS, AI Edge Function and owner administration.
+Chat-first Turkish AI assistant with account-scoped cloud conversation history. The home screen includes conversation search, resume, archive, text export, safe code-block display, response copying, dark/light themes and browser-supported voice dictation. Auth, signup and password recovery use the existing Supabase project. The previous business workspace is preserved at business.html. GitHub Pages serves the root HTML/CSS/JS; Supabase provides Auth, Postgres with RLS, AI Edge Function and owner administration.
 
 - Web AI assistants with business profile / knowledge context, usage quotas and stored conversations.
 - Customer records, appointment planning with overlap validation, follow-up tasks and reports.
@@ -16,7 +16,7 @@ See [BUSINESS.md](BUSINESS.md) for capabilities, external prerequisites, privacy
 
 ## Source
 
-Frontend: index.html, styles.css, app.js, admin.css, admin.js, business.css, business.js. No build step.
+Chat frontend: index.html, chat.css, chat.js. Business frontend: business.html, styles.css, app.js, admin.css, admin.js, business.css, business.js. No build step.
 
 Server: chat-edge.ts → aivora-ai-, admin-edge.ts → aivora-admin. SQL files are applied migration source, not scripts to reapply blindly. Server secrets are configured in Supabase only.
 
