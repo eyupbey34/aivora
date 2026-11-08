@@ -18,6 +18,6 @@ See [BUSINESS.md](BUSINESS.md) for capabilities, external prerequisites, privacy
 
 Chat frontend: index.html, chat.css, chat.js. Business frontend: business.html, styles.css, app.js, admin.css, admin.js, business.css, business.js. No build step.
 
-Server: chat-edge.ts → aivora-ai-, admin-edge.ts → aivora-admin. SQL files are applied migration source, not scripts to reapply blindly. Server secrets are configured in Supabase only.
+Server: chat-edge.ts → aivora-ai-, admin-edge.ts → aivora-admin. SQL files are applied migration source, not scripts to reapply blindly. Server secrets are configured in Supabase only. AI runs exclusively through the configured free-tier pool (Groq, Gemini, OpenRouter free models, Cloudflare Workers AI); OpenAI billing calls were removed. See FREE-AI.md for provider keys, account requirements, shared quotas and privacy. Without configured free keys, AI is intentionally paused.
 
 `node edge-tests.mjs` runs isolated HTTP tests. SQL test files use transaction rollback to avoid permanent test records. Production runs from main / root. CNAME retains aivora.tr.

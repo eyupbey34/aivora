@@ -9,6 +9,7 @@ begin
  select id into a from public.assistants where user_id=u limit 1;
  if u is null or a is null then raise exception 'Test fixture missing'; end if;
  update public.account_access set limit_override=1 where user_id=u;
+ update public.platform_settings set input_rate=0.40,cached_rate=0.10,output_rate=1.60 where id=true;
  -- Isolate these tests from existing events; all changes are rolled back.
  update public.ai_usage_events set created_at=now()-interval '3 months' where user_id=u;
  r=public.reserve_ai_request(u,a);if not (r->>'ok')::boolean then raise exception 'Valid request rejected: %',r;end if;rid=(r->>'request_id')::uuid;
