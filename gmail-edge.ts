@@ -47,7 +47,7 @@ function plain(payload:any):string{
  if(payload?.mimeType==='text/plain'&&payload.body?.data){try{return new TextDecoder().decode(unb64(payload.body.data.replace(/-/g,'+').replace(/_/g,'/'))).slice(0,24000);}catch{return '';}}
  return (payload?.parts||[]).filter((p:any)=>!p.filename).map(plain).filter(Boolean).join('\n').slice(0,24000);
 }
-function headers(msg:any){const h=msg.payload?.headers||[];const get=(n:string)=>h.find((x:any)=>x.name.toLowerCase()===n)?.value||'';return{id:msg.id,from:get('From'),to:get('To'),subject:get('Subject'),date:get('Date'),snippet:msg.snippet||''};}
+function headers(msg:any){const h=msg.payload?.headers||[];const get=(n:string)=>h.find((x:any)=>String(x.name).toLowerCase()===n.toLowerCase())?.value||'';return{id:msg.id,from:get('From'),to:get('To'),subject:get('Subject'),date:get('Date'),snippet:msg.snippet||''};}
 function emailValid(s:unknown){return typeof s==='string'&&s.length<=254&&/^[A-Za-z0-9.!#$%&'*+\/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?\.[A-Za-z]{2,}$/.test(s)&&!/[\r\n]/.test(s);}
 function mime(r:any){const subject='=?UTF-8?B?'+b64(enc.encode(r.subject))+'?=';const content=b64(enc.encode(r.body)).match(/.{1,76}/g)?.join('\r\n')||'';return url64(enc.encode(['From: '+r.sender,'To: '+r.recipient,'Subject: '+subject,'MIME-Version: 1.0','Content-Type: text/plain; charset=UTF-8','Content-Transfer-Encoding: base64','',''+content].join('\r\n')));}
 Deno.serve(async(req:Request)=>{
