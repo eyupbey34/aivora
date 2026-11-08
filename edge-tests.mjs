@@ -13,7 +13,7 @@ const adminHandler=load('admin-edge.ts',async(url,options={})=>{
  const path=url.split('/rest/v1/')[1];
  if(path.startsWith('platform_admins'))return reply(admin?[{user_id:actor}]:[]);
  if(path.startsWith('account_access'))return reply([]);
- if(path.startsWith('platform_plans'))return reply([{id:'starter',name:'Başlangıç',monthly_limit:1000,monthly_price_try:150}]);
+ if(path.startsWith('platform_plans'))return reply([{id:'free',name:'Ücretsiz',monthly_limit:25,monthly_price_try:0},{id:'starter',name:'Başlangıç',monthly_limit:100,monthly_price_try:150},{id:'pro',name:'Plus',monthly_limit:150,monthly_price_try:250},{id:'business',name:'Pro',monthly_limit:500,monthly_price_try:500}]);
  if(path.startsWith('platform_settings'))return reply([{chat_enabled:true}]);
  if(path.startsWith('ai_usage_events'))return reply([]);
  if(path==='rpc/admin_metrics')return reply({users:2});
@@ -24,7 +24,7 @@ assert.equal((await adminHandler(new Request('https://test',{method:'POST'}))).s
 assert.equal((await adminHandler(request({action:'dashboard'}))).status,403);
 assert.equal((await adminHandler(request({action:'settings',changes:{chat_enabled:false}}))).status,403);
 assert.equal(mutations,0);
-const status=await (await adminHandler(request({action:'status'}))).json();assert.equal(status.is_admin,false);assert.equal(status.usage.limit,1000);assert.equal(status.usage.plan_id,'starter');assert.equal(status.billing.payments_enabled,false);assert.equal(status.plans[0].monthly_price_try,150);assert.deepEqual(Object.keys(status.plans[0]).sort(),['id','monthly_limit','monthly_price_try','name']);
+const status=await (await adminHandler(request({action:'status'}))).json();assert.equal(status.is_admin,false);assert.equal(status.usage.limit,25);assert.equal(status.usage.plan_id,'free');assert.equal(status.billing.payments_enabled,false);assert.equal(status.plans[0].monthly_price_try,0);assert.deepEqual(Object.keys(status.plans[0]).sort(),['id','monthly_limit','monthly_price_try','name']);
 admin=true;
 assert.equal((await adminHandler(request({action:'dashboard'}))).status,200);
 assert.equal((await adminHandler(request({action:'account',target:actor,changes:{plan_id:'starter',limit_override:-1,blocked:false}}))).status,400);
