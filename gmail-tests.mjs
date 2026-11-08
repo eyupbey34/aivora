@@ -59,3 +59,14 @@ reviews[0].user_id='another-owner';r=await call('/send',{method:'POST',body:{id:
 reviews[0].user_id='00000000-0000-0000-0000-000000000001';r=await call('/send',{method:'POST',body:{id:review.id,confirm:true}});assert.equal(r.status,200);assert.equal(googleSends,1);
 r=await call('/send',{method:'POST',body:{id:review.id,confirm:true}});assert.equal(r.status,409);assert.equal(googleSends,1);
 console.log('PASS: auth, CORS, encrypted tokens, PKCE state, missing callback state, no token disclosure, header injection rejection, explicit send approval, ownership, one-time send and UTF-8 MIME. No real Google emails sent.');
+
+
+// Regression: Gmail header names may use any letter case.
+context.headerFixture={id:'test-message',payload:{headers:[{name:'From',value:'sender@example.com'},{name:'tO',value:'reader@example.com'},{name:'SUBJECT',value:'Türkçe konu'},{name:'date',value:'Sun, 08 Nov 2026 12:00:00 +0000'}]}};
+const parsedHeaders=vm.runInContext('headers(headerFixture)',context);
+assert.equal(parsedHeaders.from,'sender@example.com');
+assert.equal(parsedHeaders.to,'reader@example.com');
+assert.equal(parsedHeaders.subject,'Türkçe konu');
+assert.equal(parsedHeaders.date,'Sun, 08 Nov 2026 12:00:00 +0000');
+assert.equal(vm.runInContext("headers({id:'empty'}).subject",context),'');
+console.log('PASS: mixed-case Gmail headers and missing metadata.');
