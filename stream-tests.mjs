@@ -1,0 +1,38 @@
+import fs from 'node:fs';
+import vm from 'node:vm';
+import assert from 'node:assert/strict';
+import {stripTypeScriptTypes} from 'node:module';
+const context={Deno:{env:{get:()=>undefined}},fetch,AbortSignal,TextDecoder,Uint8Array};
+vm.createContext(context);
+vm.runInContext(stripTypeScriptTypes(fs.readFileSync('free-ai-provider.ts','utf8').replace(/export /g,'')),context);
+const provider={id:'groq',key:'test',url:'https://api.groq.com/openai/v1/chat/completions',model:'openai/gpt-oss-120b'};
+const encoder=new TextEncoder();
+let release,firstDelta;
+const first=new Promise(resolve=>firstDelta=resolve);
+const gate=new Promise(resolve=>release=resolve);
+const chunk='data: '+JSON.stringify({choices:[{delta:{content:'Merhaba şğü 👋',reasoning:'DO NOT EXPOSE'}}]})+'\n\n';
+const bytes=encoder.encode(chunk);
+const upstream=new ReadableStream({async start(c){for(let i=0;i<bytes.length;i+=3)c.enqueue(bytes.slice(i,i+3));await gate;c.enqueue(encoder.encode('data: {"choices":[],"usage":{"prompt_tokens":8,"completion_tokens":4}}\n\ndata: [DONE]\n\n'));c.close();}});
+const deltas=[];
+const pending=context.freeCompletion('System',[{role:'user',content:'Hi'}],[],[provider],async(url,options)=>{
+ const body=JSON.parse(options.body);assert.equal(body.stream,true);assert.equal(body.reasoning_effort,'low');
+ return new Response(upstream,{headers:{'Content-Type':'text/event-stream'}});
+},text=>{deltas.push(text);firstDelta();});
+await first;assert.equal(deltas.join(''),'Merhaba şğü 👋');release();
+const result=await pending;assert.equal(result.ok,true);assert.equal(result.data.usage.input_tokens,8);
+assert.ok(!JSON.stringify(result).includes('DO NOT EXPOSE'));
+let calls=0;
+const interrupted=await context.freeCompletion('System',[{role:'user',content:'Hi'}],[],[provider,{...provider,id:'backup'}],async()=>{
+ calls++;return new Response('data: {"choices":[{"delta":{"content":"Partial"}}]}\n\n',{headers:{'Content-Type':'text/event-stream'}});
+},()=>{});
+assert.equal(interrupted.ok,false);assert.equal(calls,1,'Do not retry elsewhere after publishing partial content');
+const browser={window:{},TextDecoder,Uint8Array};vm.createContext(browser);vm.runInContext(fs.readFileSync('chat-stream.js','utf8'),browser);
+const read=browser.window.aivoraStream.readReply;
+const output='event: delta\ndata: {"text":"şğü 👋"}\n\nevent: done\ndata: {"reply":"şğü 👋","historySaved":true}\n\n';
+const outputBytes=encoder.encode(output);const collected=[];
+const response=new Response(new ReadableStream({start(c){for(const byte of outputBytes)c.enqueue(Uint8Array.of(byte));c.close();}}),{headers:{'Content-Type':'text/event-stream'}});
+assert.equal((await read(response,t=>collected.push(t))).reply,'şğü 👋');assert.equal(collected.join(''),'şğü 👋');
+await assert.rejects(read(new Response('event: delta\ndata: {"text":"Partial"}\n\n',{headers:{'Content-Type':'text/event-stream'}})),/tamamlanamadı/);
+await assert.rejects(read(new Response('event: error\ndata: {"error":"Limit doldu"}\n\n',{headers:{'Content-Type':'text/event-stream'}})),/Limit doldu/);
+assert.equal((await read(new Response('{"reply":"Old backend"}',{headers:{'Content-Type':'application/json'}}))).reply,'Old backend');
+console.log('PASS: first text arrives before generation finishes; fragmented UTF-8; hidden reasoning; usage; interrupted stream does not retry; client requires final completion; JSON compatibility.');

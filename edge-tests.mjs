@@ -5,7 +5,7 @@ import {stripTypeScriptTypes} from 'node:module';
 const actor='dd6d2eec-ecb0-4306-98bf-04011b652592';
 const agent='12345678-1234-1234-1234-123456789abc';
 const reply=(x,status=200)=>new Response(JSON.stringify(x),{status,headers:{'Content-Type':'application/json','Content-Range':'0-0/0'}});
-function load(file,fetcher,envOverrides={}){let handler;const context={Deno:{env:{get:k=>Object.hasOwn(envOverrides,k)?envOverrides[k]:k==='SUPABASE_URL'?'https://test.supabase.co':k==='GROQ_API_KEY'?'test-key':k==='GROQ_FREE_TIER_CONFIRMED'?'true':k.startsWith('SUPABASE_')?'test-key':undefined},serve:h=>handler=h},fetch:fetcher,Request,Response,AbortSignal,URLSearchParams,console:{error(){}}};vm.runInNewContext(stripTypeScriptTypes((['chat-edge.ts','admin-edge.ts'].includes(file)?fs.readFileSync('free-ai-provider.ts','utf8').replace(/export /g,'')+'\n':'')+fs.readFileSync(file,'utf8').replace(/^import .*free-ai-provider.*;\n/m,'')),context);return handler;}
+function load(file,fetcher,envOverrides={}){let handler;const context={Deno:{env:{get:k=>Object.hasOwn(envOverrides,k)?envOverrides[k]:k==='SUPABASE_URL'?'https://test.supabase.co':k==='GROQ_API_KEY'?'test-key':k==='GROQ_FREE_TIER_CONFIRMED'?'true':k.startsWith('SUPABASE_')?'test-key':undefined},serve:h=>handler=h},fetch:fetcher,Request,Response,AbortSignal,URLSearchParams,performance,ReadableStream,TextEncoder,TextDecoder,setInterval,clearInterval,console:{error(){}}};vm.runInNewContext(stripTypeScriptTypes((['chat-edge.ts','admin-edge.ts'].includes(file)?fs.readFileSync('free-ai-provider.ts','utf8').replace(/export /g,'')+'\n':'')+fs.readFileSync(file,'utf8').replace(/^import .*free-ai-provider.*;\n/m,'')),context);return handler;}
 const request=body=>new Request('https://test',{method:'POST',headers:{Authorization:'Bearer test-token',Origin:'https://aivora.tr','Content-Type':'application/json'},body:JSON.stringify(body)});
 let admin=false,mutations=0;
 const adminHandler=load('admin-edge.ts',async(url,options={})=>{
@@ -61,3 +61,11 @@ console.log('PASS: approval-only action proposals, knowledge context, persisted 
 const disconnected=load('chat-edge.ts',async url=>{if(url.endsWith('/auth/v1/user'))return reply({id:actor});if(url.includes('/assistants?'))return reply([{name:'Test',type:'Test',instructions:''}]);if(url.includes('/business_knowledge?')||url.includes('/business_profile?'))return reply([]);throw Error('Disconnected provider or quota call: '+url);},{GROQ_API_KEY:undefined,GROQ_FREE_TIER_CONFIRMED:undefined});
 const disconnectedResponse=await disconnected(request({agentId:agent,message:'Hello'}));assert.equal(disconnectedResponse.status,503);assert.equal((await disconnectedResponse.json()).code,'free_ai_setup_required');
 console.log('PASS: unconfigured live handler stops before provider network calls and quota reservation.');
+
+proposal=false;
+const streamResponse=await chatHandler(request({agentId:agent,message:'Merhaba',stream:true}));
+assert.match(streamResponse.headers.get('content-type'),/text\/event-stream/);
+const streamBody=await streamResponse.text();
+assert.match(streamBody,/event: ready/);assert.match(streamBody,/event: done/);assert.match(streamBody,/Merhaba!/);
+quota=false;assert.equal((await chatHandler(request({agentId:agent,message:'Merhaba',stream:true}))).status,429);
+console.log('PASS: opt-in SSE completion preserves quota checks, usage and persistence; JSON clients still work.');

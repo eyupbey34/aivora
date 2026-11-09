@@ -20,7 +20,7 @@ function normalizeReply(provider: string, raw: any) {
  const refusal=message.refusal||(raw.choices?.[0]?.finish_reason==='content_filter'?'Bu isteğe yardımcı olamıyorum. Farklı bir konuda yardımcı olabilirim.':'');
  return {output:[{content:[{type:'output_text',text:refusal||message.content||''}]},...(refusal?[]:(message.tool_calls||[]).map((t:any)=>({type:'function_call',name:t.function?.name,arguments:t.function?.arguments})))],usage:{input_tokens:raw.usage?.prompt_tokens||0,output_tokens:raw.usage?.completion_tokens||0,input_tokens_details:{cached_tokens:raw.usage?.prompt_tokens_details?.cached_tokens||0}}};
 }
-export async function freeCompletion(instructions: string, messages: any[], tools: any[], providers=freeProviders(), fetcher=fetch) {
+export async function freeCompletion(instructions: string, messages: any[], tools: any[], providers=freeProviders(), fetcher=fetch, onDelta?: (text: string) => void) {
  const deadline=Date.now()+40000;
  let lastStatus=503;
  // Bound shared free-tier context while retaining the latest user message.
@@ -40,13 +40,42 @@ export async function freeCompletion(instructions: string, messages: any[], tool
    if(p.id==='groq'){body.max_completion_tokens=body.max_tokens;delete body.max_tokens;body.reasoning_effort='low';}
    if(p.id==='openrouter'){headers['HTTP-Referer']='https://aivora.tr';headers['X-Title']='Aivora';body.provider={max_price:{prompt:0,completion:0},require_parameters:tools.length>0};}
   }
+  let emitted=false;
+  const streaming=!!onDelta && !tools.length && p.id==='groq';
+  if(streaming){body.stream=true;body.stream_options={include_usage:true};}
   try{
    const response=await fetcher(p.url,{method:'POST',headers,body:JSON.stringify(body),signal:AbortSignal.timeout(Math.max(1,Math.min(12000,deadline-Date.now())))});
    if(!response.ok){lastStatus=response.status;if(response.status===429){const retry=response.headers.get('retry-after');const seconds=retry&&/^\d+$/.test(retry)?Number(retry):retry?Math.max(0,(Date.parse(retry)-Date.now())/1000):60;providerCooldown.set(p.id,Date.now()+Math.min(86400000,Math.max(1000,(Number.isFinite(seconds)?seconds:60)*1000)));}continue;}
-   const data=normalizeReply(p.id,await response.json());
+   let raw:any;
+   if(streaming && response.headers.get('content-type')?.includes('text/event-stream')) {
+    const reader=response.body!.getReader(), decoder=new TextDecoder();
+    let buffer='',text='',usage:any={},finished=false;
+    const consume=(line:string)=>{
+     if(!line.startsWith('data:'))return;
+     const payload=line.slice(5).trim();
+     if(payload==='[DONE]'){finished=true;return;}
+     if(!payload)return;
+     const chunk=JSON.parse(payload);
+     if(chunk.error)throw Error('provider_stream_failed');
+     const delta=chunk.choices?.[0]?.delta;
+     // Never expose reasoning tokens; only the public answer or refusal.
+     const piece=delta?.content||delta?.refusal;
+     if(typeof piece==='string'&&piece){text+=piece;emitted=true;onDelta!(piece);}
+     if(chunk.choices?.[0]?.finish_reason==='content_filter'&&!text){text='Bu isteğe yardımcı olamıyorum. Farklı bir konuda yardımcı olabilirim.';emitted=true;onDelta!(text);}
+     if(chunk.usage)usage=chunk.usage;
+     if(chunk.x_groq?.usage)usage=chunk.x_groq.usage;
+    };
+    try{
+     while(true){const {value,done}=await reader.read();buffer+=decoder.decode(value||new Uint8Array(),{stream:!done});let end;while((end=buffer.indexOf('\n'))!==-1){consume(buffer.slice(0,end).replace(/\r$/,''));buffer=buffer.slice(end+1);}if(buffer.length>200000)throw Error('provider_stream_invalid');if(done)break;}
+     if(buffer.trim())consume(buffer);
+     if(!finished)throw Error('provider_stream_incomplete');
+    }finally{await reader.cancel().catch(()=>{});reader.releaseLock();}
+    raw={choices:[{message:{content:text}}],usage};
+   }else raw=await response.json();
+   const data=normalizeReply(p.id,raw);
    if(data.output.some((o:any)=>o.type==='function_call'||o.content?.some((c:any)=>typeof c.text==='string'&&c.text.trim())))return {ok:true,status:200,data,provider:p.id};
    lastStatus=502;
-  }catch{lastStatus=502;}
+  }catch{lastStatus=502;if(emitted)break;}
  }
  return {ok:false,status:lastStatus===429?429:503,data:{output:[],usage:{},error:{code:lastStatus===429?'free_quota_exhausted':'free_provider_unavailable'}},provider:null};
 }
