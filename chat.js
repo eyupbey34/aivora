@@ -31,8 +31,17 @@
  $('#export').onclick=()=>{if(!messages.length)return notice('Önce bir sohbet başlat.');const text=messages.map(m=>(m.role==='user'?'Sen':'Aivora')+':\n'+m.content).join('\n\n');const href=window.URL.createObjectURL(new Blob([text],{type:'text/plain;charset=utf-8'}));const a=document.createElement('a');a.href=href;a.download='aivora-sohbet.txt';a.click();setTimeout(()=>window.URL.revokeObjectURL(href),1000);};
  const Speech=window.SpeechRecognition||window.webkitSpeechRecognition;let speech=null;
  if(!Speech){$('#mic').hidden=true;}else{$('#mic').onclick=()=>{if(speech){speech.stop();return;}speech=new Speech();speech.lang='tr-TR';speech.interimResults=false;speech.onresult=e=>{$('#prompt').value=($('#prompt').value+' '+e.results[0][0].transcript).trim().slice(0,4000);resize();};speech.onerror=()=>notice('Mikrofon açılamadı. Tarayıcı iznini kontrol et.');speech.onend=()=>{speech=null;$('#mic').setAttribute('aria-label','Sesle yaz');};$('#mic').setAttribute('aria-label','Dinlemeyi durdur');try{speech.start();}catch{speech=null;notice('Sesle yazma başlatılamadı.');}};}
- function authBusy(on){['login','signup','forgot'].forEach(id=>$('#'+id).disabled=on);}
+ function authBusy(on){['login','signup','forgot','googleLogin'].forEach(id=>$('#'+id).disabled=on);}
  async function authAction(signup){if(!$('#authForm').reportValidity())return;if(!db){$('#authStatus').textContent='Bağlantı kurulamadı. Sayfayı yenile.';return;}authBusy(true);$('#authStatus').textContent=signup?'Hesap oluşturuluyor…':'Giriş yapılıyor…';try{const credentials={email:$('#email').value.trim(),password:$('#password').value};const {data,error}=signup?await db.auth.signUp({...credentials,options:{emailRedirectTo:location.origin+location.pathname}}):await db.auth.signInWithPassword(credentials);if(error)throw error;$('#authStatus').textContent=signup&&!data.session?'E-postana gelen doğrulama bağlantısını aç, ardından giriş yap.':'';if(data.session){await applySession(data.session);$('#authDialog').close();$('#password').value='';}}catch(e){$('#authStatus').textContent=errorText(e);}finally{authBusy(false);}}
+ $('#googleLogin').onclick=async()=>{
+  authBusy(true);$('#authStatus').textContent='Google’a yönlendiriliyorsun…';
+  try{await window.aivoraGoogleAuth.signIn(db,URL,KEY,()=>{
+   try{sessionStorage.setItem('aivora-google-draft',$('#prompt').value);sessionStorage.setItem('aivora-google-membership',String(pendingMembership));}catch{}
+  });}catch(e){$('#authStatus').textContent=errorText(e);authBusy(false);}
+ };
+ const googleError=window.aivoraGoogleAuth.callbackError();
+ if(googleError){authOpen();$('#authStatus').textContent=googleError;}
+ try{const draft=sessionStorage.getItem('aivora-google-draft');if(draft!==null){pendingPrompt=draft;$('#prompt').value=draft;resize();pendingMembership=sessionStorage.getItem('aivora-google-membership')==='true';sessionStorage.removeItem('aivora-google-draft');sessionStorage.removeItem('aivora-google-membership');}}catch{}
  $('#authForm').onsubmit=e=>{e.preventDefault();authAction(false);};$('#signup').onclick=()=>authAction(true);
  $('#forgot').onclick=async()=>{if(!$('#email').reportValidity()||!db)return;authBusy(true);try{const {error}=await db.auth.resetPasswordForEmail($('#email').value.trim(),{redirectTo:location.origin+location.pathname});if(error)throw error;$('#authStatus').textContent='Hesabın kayıtlıysa şifre yenileme bağlantısı e-postana gönderildi.';}catch(e){$('#authStatus').textContent=errorText(e);}finally{authBusy(false);}};
  $('#logout').onclick=async()=>{if(busy)return notice('Yanıt tamamlandıktan sonra çıkış yapabilirsin.');const {error}=await db.auth.signOut();if(error)notice(errorText(error));};

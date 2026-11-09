@@ -6,3 +6,5 @@
 @media(min-width:701px) and (max-width:1000px){.plan-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 #freeAIStatus:not(:empty){border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px;color:var(--accent);font-size:11px;line-height:1.6}.disclaimer button{font-size:inherit;color:var(--accent);padding:0 3px;text-decoration:underline;text-underline-offset:3px}#understandAIPrivacy{width:100%;border-radius:9px;padding:12px}
+
+.google-login{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:13px;border-radius:9px;margin-top:20px}.google-login span{font:bold 20px Arial,sans-serif;color:#4285f4}.auth-divider{text-align:center;font-size:11px!important;margin:15px 0!important;color:var(--muted)}

@@ -25,7 +25,13 @@ $('#agentForm').addEventListener('submit',async e=>{e.preventDefault();if(!user)
 function renderBalance(){$('#statBalance').textContent=money(demoBalance);$('#walletBalance').textContent=money(demoBalance)}
 $('#addDemoBalance').addEventListener('click',()=>{if(!user)return;demoBalance+=100;localStorage.setItem('aivora_demo_balance_'+user.id,String(demoBalance));renderBalance();showToast('100 ₺ demo bakiye eklendi.')});
 function authMessage(message){$('#authMessage').textContent=message}
-function authBusy(value){$('#loginBtn').disabled=value;$('#signupBtn').disabled=value}
+function authBusy(value){$('#loginBtn').disabled=value;$('#signupBtn').disabled=value;$('#googleLogin').disabled=value}
+$('#googleLogin').addEventListener('click',async()=>{
+ authBusy(true);authMessage('Google’a yönlendiriliyorsun…');
+ try{await window.aivoraGoogleAuth.signIn(db,SUPABASE_URL,SUPABASE_KEY);}catch(error){authMessage(authError(error));authBusy(false);}
+});
+const googleSignInError=window.aivoraGoogleAuth.callbackError();
+if(googleSignInError){window.aivoraAuthRequested=true;$('#authOverlay').hidden=false;authMessage(googleSignInError);}
 $('#authForm').addEventListener('submit',async e=>{e.preventDefault();if(!db)return authMessage('Supabase kütüphanesi yüklenemedi.');authBusy(true);authMessage('Giriş yapılıyor...');try{const {error}=await db.auth.signInWithPassword({email:$('#authEmail').value.trim(),password:$('#authPassword').value});if(error)throw error;authMessage('')}catch(err){authMessage(authError(err))}finally{authBusy(false)}});
 $('#signupBtn').addEventListener('click',async()=>{if(!$('#authForm').reportValidity())return;if(!db)return authMessage('Supabase kütüphanesi yüklenemedi.');authBusy(true);authMessage('Hesap oluşturuluyor...');try{const {data,error}=await db.auth.signUp({email:$('#authEmail').value.trim(),password:$('#authPassword').value,options:{emailRedirectTo:location.origin+location.pathname}});if(error)throw error;authMessage(data.session?'Hesabın oluşturuldu.':'E-postana gelen doğrulama bağlantısını aç, ardından giriş yap.')}catch(err){authMessage(authError(err))}finally{authBusy(false)}});
 $('#logoutBtn').addEventListener('click',async()=>{if(!db)return;const {error}=await db.auth.signOut();if(error)showToast(error.message)});
