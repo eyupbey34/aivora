@@ -1,4 +1,5 @@
 import { freeProviders, freeCompletion } from "./free-ai-provider.ts";
+declare const EdgeRuntime: { waitUntil(task: Promise<unknown>): void };
 async function platformRpc(name, body) {
  const url = Deno.env.get("SUPABASE_URL");
  const service = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -117,7 +118,8 @@ Deno.serve(async (req) => {
     const encoder=new TextEncoder();
     let disconnected=false;
     const stream=new ReadableStream({
-      async start(controller){
+      start(controller){
+        const task=(async()=>{
         const send=(event,data)=>{if(!disconnected)try{controller.enqueue(encoder.encode("event: "+event+"\ndata: "+JSON.stringify(data)+"\n\n"));}catch{disconnected=true;}};
         const heartbeat=setInterval(()=>send('ping',{}),10000);
         try{
@@ -129,6 +131,9 @@ Deno.serve(async (req) => {
           if(requestId)try{await platformRpc("finish_ai_request",{p_request_id:requestId,p_status:"error",p_error:"request_failed"});}catch{console.error("Usage finalization failed");}
           send('error',{error:"İstek tamamlanamadı. Lütfen tekrar dene."});
         }finally{clearInterval(heartbeat);if(!disconnected)try{controller.close();}catch{}}
+        })();
+        if(typeof EdgeRuntime!=="undefined")EdgeRuntime.waitUntil(task);
+        return task;
       },
       // Finish metering and persistence even when the browser disconnects.
       cancel(){disconnected=true;}
