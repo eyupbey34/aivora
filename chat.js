@@ -13,11 +13,17 @@
  const marker=item=>item.kind==='file'?'\n[aivora-file:'+item.path+'|'+encodeURIComponent(item.name)+']':'\n[aivora-photo:'+item.path+']';
  const photoPattern=/\n\[aivora-photo:([a-f0-9-]{36}\/[a-f0-9-]{36}\.jpg)\]$/i;
  function splitPhoto(text){const match=text.match(photoPattern)||text.match(filePattern);let name='Dosya';try{if(match?.[2])name=decodeURIComponent(match[2]);}catch{}return {text:match?text.slice(0,match.index):text,path:match?.[1],name,isFile:!!match?.[2]};}
- function clearPhoto(){if(photo?.preview)window.URL.revokeObjectURL(photo.preview);photo=null;$('#photoInput').value='';$('#photoPreview').hidden=true;$('#photoThumbnail').removeAttribute('src');}
- $('#attachPhoto').onclick=()=>{if(busy||photoPreparing){notice('Mevcut işlem tamamlanınca fotoğraf ekleyebilirsin.');return;}$('#photoInput').click();};
+ function clearPhoto(){if(photo?.preview)window.URL.revokeObjectURL(photo.preview);photo=null;$('#photoInput').value='';$('#documentInput').value='';$('#photoPreview').hidden=true;$('#photoThumbnail').removeAttribute('src');}
+ function attachmentMenu(open){$('#attachmentMenu').hidden=!open;$('#attachPhoto').setAttribute('aria-expanded',String(open));}
+ $('#attachPhoto').onclick=()=>{if(busy||photoPreparing){notice('Mevcut işlem tamamlanınca ek ekleyebilirsin.');return;}const open=$('#attachmentMenu').hidden;attachmentMenu(open);if(open)$('#choosePhoto').focus();};
+ $('#choosePhoto').onclick=()=>{attachmentMenu(false);$('#photoInput').click();};
+ $('#chooseFile').onclick=()=>{attachmentMenu(false);$('#documentInput').click();};
+ document.addEventListener('click',event=>{if(!$('#attachmentMenu').contains(event.target)&&!$('#attachPhoto').contains(event.target))attachmentMenu(false);});
+ document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!$('#attachmentMenu').hidden){attachmentMenu(false);$('#attachPhoto').focus();}});
  $('#removePhoto').onclick=()=>{if(!busy)clearPhoto();};
- $('#photoInput').onchange=async()=>{
-  const file=$('#photoInput').files?.[0];if(!file||busy)return;
+ const handleAttachment=async(event={})=>{
+  const picker=event.currentTarget||$('#photoInput');
+  const file=picker.files?.[0];if(!file||busy)return;
   const imageFile=['image/jpeg','image/png','image/webp'].includes(file.type),ext=file.name.split('.').pop().toLowerCase();
   if(!imageFile){
    if(!['pdf','txt','csv','md','json'].includes(ext)||file.size>4*1024*1024){notice('Fotoğraf veya PDF, TXT, CSV, MD, JSON dosyası seç. Dosyalar en fazla 4 MB olabilir.');$('#photoInput').value='';return;}
@@ -31,6 +37,7 @@
    const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',0.85));if(generation!==epoch)return;if(!blob||blob.size>4*1024*1024)throw Error('Fotoğraf hazırlanamadı. Daha küçük bir dosya seç.');clearPhoto();photo={blob,name:file.name,kind:'photo',extension:'jpg',preview:window.URL.createObjectURL(blob),path:null};$('#photoThumbnail').hidden=photo.kind==='file';if(photo.preview)$('#photoThumbnail').src=photo.preview;$('#photoName').textContent=file.name;$('#photoPreview').hidden=false;notice('Fotoğraf hazır. İstersen bir soru yazıp gönder.');
   }catch{if(generation===epoch)notice('Fotoğraf açılamadı. Başka bir JPEG, PNG veya WebP dosyası seç.');}finally{window.URL.revokeObjectURL(source);photoPreparing=false;$('#send').disabled=busy||photoPreparing;}
  };
+ $('#photoInput').onchange=handleAttachment;$('#documentInput').onchange=handleAttachment;
  async function showPhoto(container,path,name,isFile){const actor=user?.id;if(!actor||!path.startsWith(actor+'/'))return;const {data,error}=await db.storage.from(isFile?FILE_BUCKET:PHOTO_BUCKET).createSignedUrl(path,3600);if(!container.isConnected||user?.id!==actor)return;if(error){const label=document.createElement('p');label.className='photo-unavailable';label.textContent='Fotoğraf şu anda yüklenemedi.';container.prepend(label);return;}if(isFile){const link=document.createElement('a');link.className='message-file';link.textContent='📄 '+name;link.href=data.signedUrl;link.target='_blank';link.rel='noopener noreferrer';container.prepend(link);return;}const img=document.createElement('img');img.className='message-photo';img.alt='Gönderilen fotoğraf';img.src=data.signedUrl;container.prepend(img);}
 
  const notice=t=>{$('#notice').textContent=t;};
@@ -47,8 +54,8 @@
  function resize(){$('#prompt').style.height='auto';$('#prompt').style.height=Math.min($('#prompt').scrollHeight,160)+'px';$('#count').textContent=$('#prompt').value.length+' / 4000';}
  $('#prompt').oninput=resize;
  $('#prompt').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing&&!matchMedia('(pointer:coarse)').matches){e.preventDefault();$('#composer').requestSubmit();}};
- function lock(on){busy=on;$('#send').disabled=on||photoPreparing;$('#newChat').disabled=on;$('#attachPhoto').disabled=on;$('#removePhoto').disabled=on;$('#export').disabled=on;$('#composerHint').textContent=on?'Aivora düşünüyor…':'Düşün. Sor. Üret.';renderHistory();}
- function newChat(){if(busy)return;epoch++;conversation=null;messages=[];clearPhoto();$('#messages').replaceChildren();$('#welcome').hidden=false;$('#prompt').value='';resize();renderHistory();notice('');setMenu(false);focusPrompt();}
+ function lock(on){busy=on;if(on)attachmentMenu(false);$('#send').disabled=on||photoPreparing;$('#newChat').disabled=on;$('#attachPhoto').disabled=on;$('#removePhoto').disabled=on;$('#export').disabled=on;$('#composerHint').textContent=on?'Aivora düşünüyor…':'Düşün. Sor. Üret.';renderHistory();}
+ function newChat(){if(busy)return;attachmentMenu(false);epoch++;conversation=null;messages=[];clearPhoto();$('#messages').replaceChildren();$('#welcome').hidden=false;$('#prompt').value='';resize();renderHistory();notice('');setMenu(false);focusPrompt();}
  $('#newChat').onclick=newChat;
  function contentInto(el,text){const chunks=text.split(/```([^\n`]*)\n?([\s\S]*?)```/g);chunks.forEach((part,i)=>{if(i%3===0){el.append(document.createTextNode(part));}else if(i%3===2){const pre=document.createElement('pre'),code=document.createElement('code');code.textContent=part;pre.append(code);el.append(pre);}});}
  function append(role,text,scroll=true){const article=document.createElement('article');article.className='message '+role;const body=document.createElement('div');body.className='message-body';if(role==='assistant'){const label=document.createElement('div');label.className='assistant-label';label.innerHTML='<span aria-hidden="true">✳</span> Aivora';body.append(label);}const content=document.createElement('div');content.className='message-content';const parsed=role==='user'?splitPhoto(text):{text};contentInto(content,parsed.text);body.append(content);if(parsed.path)void showPhoto(content,parsed.path,parsed.name,parsed.isFile);if(role==='assistant'&&text){const copy=document.createElement('button');copy.className='copy';copy.textContent='⧉ Yanıtı kopyala';copy.onclick=async()=>{try{await navigator.clipboard.writeText(text);copy.textContent='✓ Kopyalandı';setTimeout(()=>copy.textContent='⧉ Yanıtı kopyala',2000);}catch{notice('Kopyalama izni verilmedi. Metni seçerek kopyalayabilirsin.');}};body.append(copy);}article.append(body);$('#messages').append(article);if(scroll)$('#scrollArea').scrollTop=$('#scrollArea').scrollHeight;return article;}
