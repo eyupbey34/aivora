@@ -6,7 +6,7 @@ const manifest = JSON.parse(fs.readFileSync(new URL('./manifest.webmanifest', im
 assert.equal(manifest.display, 'standalone');
 assert.equal(manifest.start_url, './');
 for (const icon of manifest.icons) assert.ok(fs.existsSync(new URL(icon.src, import.meta.url)));
-for (const page of ['index.html', 'business.html', 'install.html']) {
+for (const page of ['index.html', 'install.html']) {
   const html = fs.readFileSync(new URL(page, import.meta.url), 'utf8');
   assert.ok(html.includes('rel="manifest"'));
   assert.ok(html.includes('pwa.js?v=1'));

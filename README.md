@@ -1,3 +1,15 @@
+# Aivora kişisel AI sohbeti
+
+Fotoğraf eklemek için mesaj kutusundaki ＋ düğmesini kullan. JPEG, PNG ve WebP dosyaları cihazda en fazla 1600 piksele ve 4 MB altına dönüştürülür. Fotoğraflar `chat-photos` özel alanında kullanıcı kimliğine göre saklanır. Geçmişte yalnızca nesne yolu tutulur; erişim RLS ve süreli bağlantılarla korunur.
+
+İşletme çalışma alanı kaldırıldı. Eski `business.html` bağlantıları kişisel sohbete yönlendirilir. Mevcut sohbet geçmişi korunur. İşletme profili ve bilgi bankası artık AI bağlamına eklenmez. Eski SQL dosyaları veri kaybını önlemek için geçmiş kurulum referansı olarak tutulmuştur.
+
+Yayın: GitHub Pages, main / root. Sunucu: Supabase `aivora-ai-`, `chat-edge.ts` ve `free-ai-provider.ts`. Fotoğraf alanı kurulumu: `chat-photos.sql`. Groq fotoğraflı isteklerde ücretsiz katmandaki Qwen vision modelini, metin isteklerinde mevcut modeli kullanır. Ücretli sağlayıcıya geçiş yapılmaz.
+
+Kontroller: `node edge-tests.mjs`, `node stream-tests.mjs`, `node free-ai-tests.mjs`, `node pwa-tests.mjs`. Canlı fotoğraflı yanıtın doğrulanması giriş yapılmış bir hesap gerektirir.
+
+## Önceki kurulum notları
+
 # Aivora — Birlikte düşünelim
 
 Live: https://aivora.tr

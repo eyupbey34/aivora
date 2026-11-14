@@ -59,3 +59,5 @@ body{height:var(--app-height,100dvh);overscroll-behavior:none}
 }
 @media(max-width:360px){.header-brand small{display:none}.app-install-header{font-size:10px!important;padding:8px!important}.header-left{gap:3px}.header-right{gap:0}h1{font-size:30px}.suggestions strong{font-size:11px}}
 @media(prefers-reduced-motion:reduce){.message.pending .assistant-label span{animation:none}}
+
+#photoPreview{display:flex;align-items:center;gap:10px;padding:10px;max-width:100%;border-bottom:1px solid var(--border,#333)}#photoPreview[hidden]{display:none}#photoThumbnail{width:64px;height:64px;object-fit:cover;border-radius:10px}#photoName{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}#removePhoto{border:0;background:transparent;color:inherit;font-size:24px;min-width:44px;min-height:44px}.message-photo{display:block;max-width:min(100%,360px);max-height:360px;object-fit:contain;border-radius:14px;margin:10px 0}.photo-unavailable{font-size:13px;opacity:.7}#attachPhoto{min-width:44px;min-height:44px}

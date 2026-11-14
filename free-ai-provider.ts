@@ -21,19 +21,22 @@ function normalizeReply(provider: string, raw: any) {
  return {output:[{content:[{type:'output_text',text:refusal||message.content||''}]},...(refusal?[]:(message.tool_calls||[]).map((t:any)=>({type:'function_call',name:t.function?.name,arguments:t.function?.arguments})))],usage:{input_tokens:raw.usage?.prompt_tokens||0,output_tokens:raw.usage?.completion_tokens||0,input_tokens_details:{cached_tokens:raw.usage?.prompt_tokens_details?.cached_tokens||0}}};
 }
 export async function freeCompletion(instructions: string, messages: any[], tools: any[], providers=freeProviders(), fetcher=fetch, onDelta?: (text: string) => void) {
+ const hasImages=messages.some(m=>Array.isArray(m.content));
  const deadline=Date.now()+40000;
  let lastStatus=503;
  // Bound shared free-tier context while retaining the latest user message.
  const context=[];let chars=0;
- for(const m of [...messages].reverse()){if(context.length&&chars+m.content.length>12000)break;context.unshift(m);chars+=m.content.length;}
- for(const p of providers) {
+ for(const m of [...messages].reverse()){const size=typeof m.content==='string'?m.content.length:m.content.filter(c=>c.type==='text').reduce((n,c)=>n+c.text.length,0);if(context.length&&chars+size>12000)break;context.unshift(m);chars+=size;}
+ for(const original of providers) {
+  if(hasImages&&!['groq','gemini','openrouter'].includes(original.id))continue;
+  const p=hasImages&&original.id==='groq'?{...original,model:'qwen/qwen3.8-27b'}:original;
   if(Date.now()>=deadline)break;
   if((providerCooldown.get(p.id)||0)>Date.now()){lastStatus=429;continue;}
   const headers:Record<string,string>={'Content-Type':'application/json'};
   let body:any;
   if(p.id==='gemini') {
    headers['x-goog-api-key']=p.key!;
-   body={systemInstruction:{parts:[{text:instructions.slice(0,12000)}]},contents:context.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]})),generationConfig:{maxOutputTokens:1500},...(tools.length?{tools:[{functionDeclarations:tools.map(t=>({name:t.name,description:t.description,parameters:{type:'OBJECT',properties:Object.fromEntries(Object.keys(t.parameters.properties).map(k=>[k,{type:'STRING'}])),required:t.parameters.required}}))}]}:{})};
+   body={systemInstruction:{parts:[{text:instructions.slice(0,12000)}]},contents:context.map(m=>({role:m.role==='assistant'?'model':'user',parts:typeof m.content==='string'?[{text:m.content}]:m.content.map(c=>c.type==='text'?{text:c.text}:{inlineData:{mimeType:c.image_url.url.split(';')[0].slice(5),data:c.image_url.url.split(',')[1]}})})),generationConfig:{maxOutputTokens:1500},...(tools.length?{tools:[{functionDeclarations:tools.map(t=>({name:t.name,description:t.description,parameters:{type:'OBJECT',properties:Object.fromEntries(Object.keys(t.parameters.properties).map(k=>[k,{type:'STRING'}])),required:t.parameters.required}}))}]}:{})};
   }else{
    headers.Authorization='Bearer '+p.key;
    body={model:p.model,messages:[{role:'system',content:instructions.slice(0,12000)},...context],max_tokens:1500,stream:false,...(tools.length?{tools:tools.map(t=>({type:'function',function:{name:t.name,description:t.description,parameters:t.parameters}})),tool_choice:'auto'}:{})};
