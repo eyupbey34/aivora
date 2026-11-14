@@ -61,3 +61,9 @@ body{height:var(--app-height,100dvh);overscroll-behavior:none}
 @media(prefers-reduced-motion:reduce){.message.pending .assistant-label span{animation:none}}
 
 #photoPreview{display:flex;align-items:center;gap:10px;padding:10px;max-width:100%;border-bottom:1px solid var(--border,#333)}#photoPreview[hidden]{display:none}#photoThumbnail{width:64px;height:64px;object-fit:cover;border-radius:10px}#photoName{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}#removePhoto{border:0;background:transparent;color:inherit;font-size:24px;min-width:44px;min-height:44px}.message-photo{display:block;max-width:min(100%,360px);max-height:360px;object-fit:contain;border-radius:14px;margin:10px 0}.photo-unavailable{font-size:13px;opacity:.7}#attachPhoto{min-width:44px;min-height:44px}
+
+/* Always-visible attachment control, including compact Android viewports. */
+#attachPhoto{display:inline-flex;align-items:center;justify-content:center;gap:6px;width:auto;min-width:100px;padding:0 10px;border:1px solid var(--line);border-radius:12px;color:var(--text);flex-shrink:0;font-size:12px;line-height:1;cursor:pointer;touch-action:manipulation}#attachPhoto svg{flex-shrink:0}#attachPhoto span{display:inline!important;font-size:12px}#attachPhoto:hover{border-color:var(--accent)}
+#menu{touch-action:manipulation;flex-shrink:0;position:relative;z-index:6}
+.composer-tools>div{flex-shrink:0}.composer-tools>span{min-width:0}
+@media(max-width:700px){.composer-tools{gap:6px;flex-wrap:wrap}.composer-tools>span{flex:1;font-size:12px}.composer-tools>span>span{display:none}.composer-tools>div{gap:4px}#attachPhoto{min-width:100px;min-height:44px}.header-left{min-width:0}#menu{min-width:44px;min-height:44px}}
