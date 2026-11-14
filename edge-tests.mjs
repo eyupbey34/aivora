@@ -5,7 +5,7 @@ import {stripTypeScriptTypes} from 'node:module';
 const actor='dd6d2eec-ecb0-4306-98bf-04011b652592';
 const agent='12345678-1234-1234-1234-123456789abc';
 const reply=(x,status=200)=>new Response(JSON.stringify(x),{status,headers:{'Content-Type':'application/json','Content-Range':'0-0/0'}});
-function load(file,fetcher,envOverrides={}){let handler;const context={Deno:{env:{get:k=>Object.hasOwn(envOverrides,k)?envOverrides[k]:k==='SUPABASE_URL'?'https://test.supabase.co':k==='GROQ_API_KEY'?'test-key':k==='GROQ_FREE_TIER_CONFIRMED'?'true':k.startsWith('SUPABASE_')?'test-key':undefined},serve:h=>handler=h},fetch:fetcher,Request,Response,AbortSignal,URLSearchParams,performance,btoa,Uint8Array,ReadableStream,TextEncoder,TextDecoder,setInterval,clearInterval,console:{error(){}}};vm.runInNewContext(stripTypeScriptTypes((['chat-edge.ts','admin-edge.ts'].includes(file)?fs.readFileSync('free-ai-provider.ts','utf8').replace(/export /g,'')+'\n':'')+fs.readFileSync(file,'utf8').replace(/^import .*free-ai-provider.*;\n/m,'')),context);return handler;}
+function load(file,fetcher,envOverrides={}){let handler;const context={Deno:{env:{get:k=>Object.hasOwn(envOverrides,k)?envOverrides[k]:k==='SUPABASE_URL'?'https://test.supabase.co':k==='GROQ_API_KEY'?'test-key':k==='GROQ_FREE_TIER_CONFIRMED'?'true':k.startsWith('SUPABASE_')?'test-key':undefined},serve:h=>handler=h},fetch:fetcher,Request,Response,AbortSignal,URLSearchParams,performance,btoa,Uint8Array,ReadableStream,TextEncoder,TextDecoder,setInterval,clearInterval,console:{error(){}}};vm.runInNewContext(stripTypeScriptTypes((['chat-edge.ts','admin-edge.ts'].includes(file)?fs.readFileSync('free-ai-provider.ts','utf8').replace(/export /g,'')+'\n'+fs.readFileSync('file-reader.ts','utf8').replace(/export /g,'')+'\n':'')+fs.readFileSync(file,'utf8').replace(/^import .*free-ai-provider.*;\n/m,'').replace(/^import .*file-reader.*;\n/m,'')),context);return handler;}
 const request=body=>new Request('https://test',{method:'POST',headers:{Authorization:'Bearer test-token',Origin:'https://aivora.tr','Content-Type':'application/json'},body:JSON.stringify(body)});
 let admin=false,mutations=0;
 const adminHandler=load('admin-edge.ts',async(url,options={})=>{
@@ -41,6 +41,7 @@ const chatHandler=load('chat-edge.ts',async(url,options={})=>{
  if(url.includes('/rest/v1/business_profile?'))return reply([]);
  if(url.includes('/rest/v1/business_conversations?'))return reply(threadOwner?[{id:thread}]:[]);
  if(url.includes('/rest/v1/business_messages?'))return reply([{role:'assistant',content:'Önceki yanıt'},{role:'user',content:'Önceki soru'}]);
+ if(url.includes('/storage/v1/object/authenticated/chat-files/')){imageCalls++;return new Response('Document sample: apple count is 42.',{headers:{'Content-Type':'text/plain'}});}
  if(url.includes('/storage/v1/object/authenticated/chat-photos/')){imageCalls++;return new Response(new Uint8Array([255,216,255]),{status:imageStatus,headers:{'Content-Type':imageMime}});}
  if(url.endsWith('/rpc/save_ai_exchange')){lastQuestion=JSON.parse(options.body).p_question;saved++;return reply(thread);}
  if(url.endsWith('/rpc/reserve_ai_request'))return reply(quota?{ok:true,request_id:agent}:{ok:false,code:'quota_exceeded',message:'Limit doldu.'});
@@ -80,3 +81,8 @@ const before=imageCalls;assert.equal((await chatHandler(request({agentId:agent,m
 imageStatus=404;assert.equal((await chatHandler(request({agentId:agent,message:photoQuestion}))).status,400);imageStatus=200;
 imageMime='text/html';assert.equal((await chatHandler(request({agentId:agent,message:photoQuestion}))).status,400);
 console.log('PASS: private image download, vision model routing, persisted photo reference, foreign-user rejection, missing image and invalid MIME rejection.');
+
+const fileQuestion='Özetle\n[aivora-file:'+actor+'/'+agent+'.txt|notes.txt]';
+const fileResult=await chatHandler(request({agentId:agent,message:fileQuestion}));assert.equal(fileResult.status,200);assert.equal((await fileResult.json()).historySaved,true);assert.match(lastProviderBody.messages.at(-1).content,/apple count is 42/);assert.equal(lastQuestion,fileQuestion);
+assert.equal((await chatHandler(request({agentId:agent,message:fileQuestion.replace(actor,thread)}))).status,403);
+console.log('PASS: private text file reaches model, reference persists, cross-owner file rejected.');

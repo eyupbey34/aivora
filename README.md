@@ -1,3 +1,5 @@
+Fotoğraf ve dosya eki: ＋ düğmesi JPEG/PNG/WebP fotoğrafları ve PDF/TXT/CSV/MD/JSON dosyalarını kabul eder. Dosyalar en fazla 4 MB, PDF dosyaları en fazla 40 sayfa olabilir. Model bağlamına her dosyanın ilk 12000 karakteri eklenir; kırpılma bilgisi modele iletilir. Taranmış ve metin içermeyen PDF için fotoğraf yükleme önerilir. Dosyalar `chat-files` özel alanında tutulur. Sunucu bağımlılığı: `unpdf@2.2.0`, yalnızca PDF isteklerinde yüklenir.
+
 # Aivora kişisel AI sohbeti
 
 Fotoğraf eklemek için mesaj kutusundaki ＋ düğmesini kullan. JPEG, PNG ve WebP dosyaları cihazda en fazla 1600 piksele ve 4 MB altına dönüştürülür. Fotoğraflar `chat-photos` özel alanında kullanıcı kimliğine göre saklanır. Geçmişte yalnızca nesne yolu tutulur; erişim RLS ve süreli bağlantılarla korunur.

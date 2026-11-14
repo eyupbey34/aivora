@@ -67,3 +67,5 @@ body{height:var(--app-height,100dvh);overscroll-behavior:none}
 #menu{touch-action:manipulation;flex-shrink:0;position:relative;z-index:6}
 .composer-tools>div{flex-shrink:0}.composer-tools>span{min-width:0}
 @media(max-width:700px){.composer-tools{gap:6px;flex-wrap:wrap}.composer-tools>span{flex:1;font-size:12px}.composer-tools>span>span{display:none}.composer-tools>div{gap:4px}#attachPhoto{min-width:100px;min-height:44px}.header-left{min-width:0}#menu{min-width:44px;min-height:44px}}
+
+#attachPhoto{display:inline-grid;place-items:center;min-width:44px;width:44px;height:44px;padding:0;border:1px solid var(--line);border-radius:12px}#attachPhoto span{font-size:30px!important;line-height:1}#attachPhoto:focus-visible{outline:2px solid var(--accent)}.message-file{display:block;padding:12px 14px;border:1px solid var(--line);border-radius:12px;margin:8px 0;overflow-wrap:anywhere;color:var(--accent)}
